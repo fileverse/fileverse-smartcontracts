@@ -17,7 +17,8 @@ async function main() {
   const FileverseNFT = await ethers.getContractFactory("FileverseNFT");
   const fileverseNFT = await FileverseNFT.deploy("FileverseNFT", "FNFT");
 
-  await fileverseNFT.deployed();
+  const data = await fileverseNFT.deployed();
+  console.log(data);
 
   console.log("FileverseNFT deployed to:", fileverseNFT.address);
 }
