@@ -34,6 +34,15 @@ contract FileverseNFT is ERC721, Ownable, ERC721Pausable, ERC721Enumerable {
         _incrementTokenId();
     }
 
+    function batchMint(address[] memory _to) public onlyOwner returns (bool _success) {
+        for (uint8 i = 0; i < _to.length; i++){
+            uint256 newTokenId = _getNextTokenId();
+            _mint(_to[i], newTokenId);
+            _incrementTokenId();
+        }
+        return true;
+    }
+
     /**
      * @dev calculates the next token ID based on value of _currentTokenId
      * @return uint256 for the next token ID
