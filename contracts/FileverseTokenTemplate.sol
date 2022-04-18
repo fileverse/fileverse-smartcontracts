@@ -20,15 +20,15 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
     constructor(
         string memory name,
         string memory symbol,
-        address _minterAddress
+        address ownerAddress
     ) ERC721(name, symbol) {
         require(
-            _minterAddress != address(0),
-            "_minterAddress cannot be zero"
+            ownerAddress != address(0),
+            "ownerAddress cannot be zero"
         );
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(PAUSER_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, _minterAddress);
+        _grantRole(DEFAULT_ADMIN_ROLE, ownerAddress);
+        _grantRole(PAUSER_ROLE, ownerAddress);
+        _grantRole(MINTER_ROLE, msg.sender);
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -50,7 +50,7 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
     }
 
     function safeBatchMint(address[] memory to) public onlyRole(MINTER_ROLE) returns (bool) {
-        if(to.length < 1) return true;
+        if(to.length < 1 || to.length > 50) return false;
         for (uint8 i = 0; i < to.length; i++){
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
