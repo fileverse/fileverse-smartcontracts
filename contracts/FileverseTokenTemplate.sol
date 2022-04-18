@@ -13,6 +13,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, AccessControl, ERC721Burnable {
     using Counters for Counters.Counter;
 
+    string public _baseUri = "";
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     Counters.Counter private _tokenIdCounter;
@@ -20,19 +21,23 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
     constructor(
         string memory name,
         string memory symbol,
-        address ownerAddress
+        address ownerAddress,
+        string memory baseUri
     ) ERC721(name, symbol) {
         require(
             ownerAddress != address(0),
             "ownerAddress cannot be zero"
         );
+        _baseUri = baseUri;
         _grantRole(DEFAULT_ADMIN_ROLE, ownerAddress);
         _grantRole(PAUSER_ROLE, ownerAddress);
+        _grantRole(MINTER_ROLE, ownerAddress);
+        _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
     }
 
-    function _baseURI() internal pure override returns (string memory) {
-        return "https://api.fileverse.io/token/";
+    function _baseURI() internal view override returns (string memory) {
+        return _baseUri;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
