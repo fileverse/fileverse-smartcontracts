@@ -43,7 +43,7 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
         _unpause();
     }
 
-    function safeMint(address to) public onlyRole(MINTER_ROLE) {
+    function safeMint(address to) public onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
