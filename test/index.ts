@@ -1,19 +1,19 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("FileverseNFT", function () {
+  it("Should confirm the name and symbol", async function () {
+    const FileverseTokenTemplate = await ethers.getContractFactory(
+      "FileverseTokenTemplate"
+    );
+    const _name = "FileverseNFT";
+    const _symbol = "FNFT";
+    const fileverseNFT = await FileverseTokenTemplate.deploy(_name, _symbol);
+    await fileverseNFT.deployed();
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
-
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
-
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
-
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    expect(await fileverseNFT.name()).to.equal(_name);
+    expect(await fileverseNFT.symbol()).to.equal(_symbol);
+    console.log("name: ", await fileverseNFT.name());
+    console.log("symbol:", await fileverseNFT.symbol());
   });
 });
