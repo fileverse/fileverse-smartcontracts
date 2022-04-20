@@ -14,6 +14,7 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
     using Counters for Counters.Counter;
 
     string public _baseUri = "";
+    bool public _immovable = false;
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     Counters.Counter private _tokenIdCounter;
@@ -22,13 +23,15 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
         string memory name,
         string memory symbol,
         address ownerAddress,
-        string memory baseUri
+        string memory baseUri,
+        bool immovable
     ) ERC721(name, symbol) {
         require(
             ownerAddress != address(0),
             "ownerAddress cannot be zero"
         );
         _baseUri = baseUri;
+        _immovable = immovable;
         _grantRole(DEFAULT_ADMIN_ROLE, ownerAddress);
         _grantRole(PAUSER_ROLE, ownerAddress);
         _grantRole(MINTER_ROLE, ownerAddress);
@@ -38,6 +41,10 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
 
     function _baseURI() internal view override returns (string memory) {
         return _baseUri;
+    }
+
+    function setBaseURI(string memory baseUri) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _baseUri = baseUri;
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -70,6 +77,19 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, ERC721URIStorage, P
         override(ERC721, ERC721Enumerable)
     {
         super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override (ERC721) {
+        require(_immovable);
+        ERC721._transfer(from, to, tokenId);
+    }
+
+    function markImmovabble(bool immovable) external onlyRole(PAUSER_ROLE) {
+        _immovable = immovable;
     }
 
     // The following functions are overrides required by Solidity.
