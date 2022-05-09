@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @custom:security-contact security@adaptiv.me
-contract ProfileNFT is ERC721, ERC721Enumerable, Pausable, AccessControl, ERC721Burnable {
+contract FileverseTokenTemplate is ERC721, ERC721Enumerable, Pausable, AccessControl, ERC721Burnable {
     using Counters for Counters.Counter;
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
