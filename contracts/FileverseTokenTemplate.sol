@@ -16,7 +16,7 @@ contract ProfileNFT is ERC721, ERC721Enumerable, Pausable, AccessControl, ERC721
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     Counters.Counter private _tokenIdCounter;
 
-    string public baseUri = "https://profiles.adaptiv.me/token/";
+    string public baseUri = "https://api.fileverse.io/token/";
 
     constructor(
         string memory name,
