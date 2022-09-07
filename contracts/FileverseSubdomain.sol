@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.6;
+pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -15,6 +15,7 @@ contract FileverseSubdomain is AccessControl {
         string decryptionKeyVerifier;
         string encryptionKeyVerifier;
     }
+
     mapping(uint256 => KeyVerifier) public keyVerifiers;
 
     struct Member {
@@ -22,17 +23,23 @@ contract FileverseSubdomain is AccessControl {
         string viewDid;
         string editDid;
     }
+
     mapping(address => Member) public members;
 
-    enum FileType { PUBLIC, PRIVATE, GATED }
+    enum FileType {
+        PUBLIC,
+        PRIVATE,
+        GATED
+    }
+
     struct File {
-        uint256 fileId;
         string metadataIPFSHash;
         string contentIPFSHash;
-        string gate;
+        string gateIPFSHash;
         FileType fileType;
         uint256 version;
     }
+
     mapping(uint256 => File) public files;
 
     constructor() {
@@ -41,39 +48,76 @@ contract FileverseSubdomain is AccessControl {
     }
 
     event AddedCollaborator(address indexed to, address indexed by);
+
     function addCollaborator(address to) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(COLLAB_ROLE, to);
         emit AddedCollaborator(to, msg.sender);
     }
 
     event RemovedCollaborator(address indexed to, address indexed by);
-    function removeCollaborator(address to) public onlyRole(DEFAULT_ADMIN_ROLE) {
+
+    function removeCollaborator(address to)
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         _revokeRole(COLLAB_ROLE, to);
         emit RemovedCollaborator(to, msg.sender);
     }
 
     event AddedFile(uint256 indexed fileId, address indexed by);
-    function addFile(string calldata metadataIPFSHash, string calldata contentIPFSHash, string calldata gate, FileType filetype, uint256 version) public onlyRole(COLLAB_ROLE) {
+
+    function addFile(
+        string calldata metadataIPFSHash,
+        string calldata contentIPFSHash,
+        string calldata gateIPFSHash,
+        FileType filetype,
+        uint256 version
+    ) public onlyRole(COLLAB_ROLE) {
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
-        files[fileId] = File(fileId, metadataIPFSHash, contentIPFSHash, gate, filetype, version);
+        files[fileId] = File(
+            metadataIPFSHash,
+            contentIPFSHash,
+            gateIPFSHash,
+            filetype,
+            version
+        );
         emit AddedFile(fileId, msg.sender);
     }
 
     event EditedFile(uint256 indexed fileId, address indexed by);
-    function editFile(uint256 fileId, string calldata metadataIPFSHash, string calldata contentIPFSHash, string calldata gate, FileType filetype, uint256 version) public onlyRole(COLLAB_ROLE) {
-        files[fileId] = File(fileId, metadataIPFSHash, contentIPFSHash, gate, filetype, version);
+
+    function editFile(
+        uint256 fileId,
+        string calldata metadataIPFSHash,
+        string calldata contentIPFSHash,
+        string calldata gateIPFSHash,
+        FileType filetype,
+        uint256 version
+    ) public onlyRole(COLLAB_ROLE) {
+        files[fileId] = File(
+            metadataIPFSHash,
+            contentIPFSHash,
+            gateIPFSHash,
+            filetype,
+            version
+        );
         emit EditedFile(fileId, msg.sender);
     }
 
     event RegisteredMember(address indexed to);
-    function registerSelfFromMember(string calldata viewDid, string calldata editDid) public {
+
+    function registerSelfFromMember(
+        string calldata viewDid,
+        string calldata editDid
+    ) public {
         address sender = msg.sender;
         members[sender] = Member(sender, viewDid, editDid);
         emit RegisteredMember(msg.sender);
     }
 
     event RemovedMember(address indexed to);
+
     function removeSelfFromMember() public {
         address sender = msg.sender;
         delete members[sender];
