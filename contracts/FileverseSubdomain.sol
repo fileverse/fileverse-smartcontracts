@@ -9,6 +9,7 @@ contract FileverseSubdomain is AccessControl {
     using Counters for Counters.Counter;
 
     Counters.Counter private _fileIdCounter;
+    Counters.Counter private _collaboratorCounter;
     bytes32 public constant COLLAB_ROLE = keccak256("COLLAB_ROLE");
 
     struct KeyVerifier {
@@ -25,6 +26,8 @@ contract FileverseSubdomain is AccessControl {
     }
 
     mapping(address => Member) public members;
+
+    mapping(uint256 => address) public collaborators;
 
     enum FileType {
         PUBLIC,
@@ -45,24 +48,39 @@ contract FileverseSubdomain is AccessControl {
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(COLLAB_ROLE, msg.sender);
+        uint256 collaboratorId = _collaboratorCounter.current();
+        collaborators[collaboratorId] = msg.sender;
+        _collaboratorCounter.increment();
     }
 
     event AddedCollaborator(address indexed to, address indexed by);
 
     function addCollaborator(address to) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(COLLAB_ROLE, to);
+        uint256 collaboratorId = _collaboratorCounter.current();
+        _collaboratorCounter.increment();
+        collaborators[collaboratorId] = to;
         emit AddedCollaborator(to, msg.sender);
     }
 
     event RemovedCollaborator(address indexed to, address indexed by);
 
-    function removeCollaborator(address to)
+    function removeCollaborator(address to, uint256 index)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         _revokeRole(COLLAB_ROLE, to);
+        uint256 totalCollborators = _collaboratorCounter.current();
+        collaborators[index] = collaborators[totalCollborators];
+        delete collaborators[totalCollborators];
+        _collaboratorCounter.decrement();
         emit RemovedCollaborator(to, msg.sender);
     }
+
+    function getCollaboratorCount() public view returns (uint256) {
+        return _collaboratorCounter.current();
+    }
+
 
     event AddedFile(uint256 indexed fileId, address indexed by);
 
@@ -103,6 +121,10 @@ contract FileverseSubdomain is AccessControl {
             version
         );
         emit EditedFile(fileId, msg.sender);
+    }
+
+    function getFileCount() public view returns (uint256) {
+        return _fileIdCounter.current();
     }
 
     event RegisteredMember(address indexed to);
