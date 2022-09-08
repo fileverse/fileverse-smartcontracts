@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @custom:security-contact security@fileverse.io
-contract FileverseSubdomain is AccessControl {
+contract FileverseSubdomain is Ownable {
     using Counters for Counters.Counter;
 
+    address internal constant SENTINEL_COLLABORATOR = address(0x1);
+
+    mapping(address => address) internal collaborators;
+    uint256 internal collaboratorCount;
+
     Counters.Counter private _fileIdCounter;
-    Counters.Counter private _collaboratorCounter;
-    bytes32 public constant COLLAB_ROLE = keccak256("COLLAB_ROLE");
 
     struct KeyVerifier {
         string decryptionKeyVerifier;
@@ -26,8 +29,6 @@ contract FileverseSubdomain is AccessControl {
     }
 
     mapping(address => Member) public members;
-
-    mapping(uint256 => address) public collaborators;
 
     enum FileType {
         PUBLIC,
@@ -46,39 +47,89 @@ contract FileverseSubdomain is AccessControl {
     mapping(uint256 => File) public files;
 
     constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(COLLAB_ROLE, msg.sender);
-        uint256 collaboratorId = _collaboratorCounter.current();
-        collaborators[collaboratorId] = msg.sender;
-        _collaboratorCounter.increment();
+        address[] memory _collaborators =new address[](1);
+        _collaborators[0] = msg.sender;
+        setupCollaborators(_collaborators);
+    }
+
+    function setupCollaborators(address[] memory _collaborators) internal {
+        // Initializing Subdomain collaborators.
+        address currentCollaborator = SENTINEL_COLLABORATOR;
+        for (uint256 i = 0; i < _collaborators.length; i++) {
+            // Owner address cannot be null.
+            address collaborator = _collaborators[i];
+            require(collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR && collaborator != address(this) && currentCollaborator != collaborator, "Cannot be sentinal");
+            // No duplicate collaborators allowed.
+            require(collaborators[collaborator] == address(0), "No Duplicates");
+            collaborators[currentCollaborator] = collaborator;
+            currentCollaborator = collaborator;
+        }
+        collaborators[currentCollaborator] = SENTINEL_COLLABORATOR;
+        collaboratorCount = _collaborators.length;
     }
 
     event AddedCollaborator(address indexed to, address indexed by);
 
-    function addCollaborator(address to) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        _grantRole(COLLAB_ROLE, to);
-        uint256 collaboratorId = _collaboratorCounter.current();
-        _collaboratorCounter.increment();
-        collaborators[collaboratorId] = to;
-        emit AddedCollaborator(to, msg.sender);
+    function addCollaborator(address collaborator) public onlyOwner {
+        require(collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR && collaborator != address(this), "Cannot be sentinal");
+        // No duplicate owners allowed.
+        require(collaborators[collaborator] == address(0), "GS204");
+        collaborators[collaborator] = collaborators[SENTINEL_COLLABORATOR];
+        collaborators[SENTINEL_COLLABORATOR] = collaborator;
+        collaboratorCount++;
+        emit AddedCollaborator(collaborator, msg.sender);
     }
 
     event RemovedCollaborator(address indexed to, address indexed by);
 
-    function removeCollaborator(address to, uint256 index)
+    function removeCollaborator(address prevCollaborator, address collaborator)
         public
-        onlyRole(DEFAULT_ADMIN_ROLE)
+        onlyOwner
     {
-        _revokeRole(COLLAB_ROLE, to);
-        uint256 totalCollborators = _collaboratorCounter.current();
-        collaborators[index] = collaborators[totalCollborators];
-        delete collaborators[totalCollborators];
-        _collaboratorCounter.decrement();
-        emit RemovedCollaborator(to, msg.sender);
+        // Only allow to remove an owner, if greater than one.
+        require(collaboratorCount - 1 >= 1, "Should have atleast greater than one owner");
+        // Validate owner address and check that it corresponds to owner index.
+        require(collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR, "Cannot be sentinal");
+        require(collaborators[prevCollaborator] == collaborator, "GS205");
+        collaborators[prevCollaborator] = collaborators[collaborator];
+        collaborators[collaborator] = address(0);
+        collaboratorCount--;
+        emit RemovedCollaborator(collaborator, msg.sender);
+    }
+
+    function isCollaborator(address collaborator) public view returns (bool) {
+        return collaborator != SENTINEL_COLLABORATOR && collaborators[collaborator] != address(0);
+    }
+
+    function _checkRole(address account) internal view virtual {
+        if (!isCollaborator(account)) {
+            revert(
+                "Role Missing"
+            );
+        }
+    }
+
+    modifier onlyCollaborator()  {
+        _checkRole(_msgSender());
+        _;
+    }
+
+    function getCollaborators() public view returns (address[] memory) {
+        address[] memory array = new address[](collaboratorCount);
+
+        // populate return array
+        uint256 index = 0;
+        address currentCollaborator = collaborators[SENTINEL_COLLABORATOR];
+        while (currentCollaborator != SENTINEL_COLLABORATOR) {
+            array[index] = currentCollaborator;
+            currentCollaborator = collaborators[currentCollaborator];
+            index++;
+        }
+        return array;
     }
 
     function getCollaboratorCount() public view returns (uint256) {
-        return _collaboratorCounter.current();
+        return collaboratorCount;
     }
 
 
@@ -90,7 +141,7 @@ contract FileverseSubdomain is AccessControl {
         string calldata gateIPFSHash,
         FileType filetype,
         uint256 version
-    ) public onlyRole(COLLAB_ROLE) {
+    ) public onlyCollaborator {
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
         files[fileId] = File(
@@ -112,7 +163,7 @@ contract FileverseSubdomain is AccessControl {
         string calldata gateIPFSHash,
         FileType filetype,
         uint256 version
-    ) public onlyRole(COLLAB_ROLE) {
+    ) public onlyCollaborator {
         files[fileId] = File(
             metadataIPFSHash,
             contentIPFSHash,
