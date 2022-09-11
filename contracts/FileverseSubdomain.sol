@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract FileverseSubdomain is Ownable {
     using Counters for Counters.Counter;
 
+    string public name;
+
     address internal constant SENTINEL_COLLABORATOR = address(0x1);
 
     mapping(address => address) internal collaborators;
@@ -23,7 +25,7 @@ contract FileverseSubdomain is Ownable {
     mapping(uint256 => KeyVerifier) public keyVerifiers;
 
     struct Member {
-        address to;
+        address account;
         string viewDid;
         string editDid;
     }
@@ -46,9 +48,10 @@ contract FileverseSubdomain is Ownable {
 
     mapping(uint256 => File) public files;
 
-    constructor() {
-        address[] memory _collaborators =new address[](1);
-        _collaborators[0] = msg.sender;
+    constructor(string memory _name) {
+        name = _name;
+        address[] memory _collaborators = new address[](1);
+        _collaborators[0] = _msgSender();
         setupCollaborators(_collaborators);
     }
 
@@ -77,7 +80,7 @@ contract FileverseSubdomain is Ownable {
         collaborators[collaborator] = collaborators[SENTINEL_COLLABORATOR];
         collaborators[SENTINEL_COLLABORATOR] = collaborator;
         collaboratorCount++;
-        emit AddedCollaborator(collaborator, msg.sender);
+        emit AddedCollaborator(collaborator, _msgSender());
     }
 
     event RemovedCollaborator(address indexed to, address indexed by);
@@ -94,7 +97,7 @@ contract FileverseSubdomain is Ownable {
         collaborators[prevCollaborator] = collaborators[collaborator];
         collaborators[collaborator] = address(0);
         collaboratorCount--;
-        emit RemovedCollaborator(collaborator, msg.sender);
+        emit RemovedCollaborator(collaborator, _msgSender());
     }
 
     function isCollaborator(address collaborator) public view returns (bool) {
@@ -151,7 +154,7 @@ contract FileverseSubdomain is Ownable {
             filetype,
             version
         );
-        emit AddedFile(fileId, msg.sender);
+        emit AddedFile(fileId, _msgSender());
     }
 
     event EditedFile(uint256 indexed fileId, address indexed by);
@@ -171,7 +174,7 @@ contract FileverseSubdomain is Ownable {
             filetype,
             version
         );
-        emit EditedFile(fileId, msg.sender);
+        emit EditedFile(fileId, _msgSender());
     }
 
     function getFileCount() public view returns (uint256) {
@@ -184,16 +187,16 @@ contract FileverseSubdomain is Ownable {
         string calldata viewDid,
         string calldata editDid
     ) public {
-        address sender = msg.sender;
+        address sender = _msgSender();
         members[sender] = Member(sender, viewDid, editDid);
-        emit RegisteredMember(msg.sender);
+        emit RegisteredMember(_msgSender());
     }
 
     event RemovedMember(address indexed to);
 
     function removeSelfFromMember() public {
-        address sender = msg.sender;
+        address sender = _msgSender();
         delete members[sender];
-        emit RemovedMember(msg.sender);
+        emit RemovedMember(_msgSender());
     }
 }
