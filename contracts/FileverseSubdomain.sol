@@ -25,7 +25,6 @@ contract FileverseSubdomain is Ownable {
     mapping(uint256 => KeyVerifier) public keyVerifiers;
 
     struct Member {
-        address account;
         string viewDid;
         string editDid;
     }
@@ -48,11 +47,21 @@ contract FileverseSubdomain is Ownable {
 
     mapping(uint256 => File) public files;
 
-    constructor(string memory _name) {
+    constructor(
+        string memory _name,
+        string memory _ownerViewDid,
+        string memory _ownerEditDid
+    ) {
         name = _name;
         address[] memory _collaborators = new address[](1);
         _collaborators[0] = _msgSender();
         setupCollaborators(_collaborators);
+        setupMember(_msgSender(), _ownerViewDid, _ownerEditDid);
+    }
+
+    function setupMember(address memory account, string memory viewDid, string memory editDid) internal {
+        members[account] = Member(viewDid, editDid);
+        emit RegisteredMember(account);
     }
 
     function setupCollaborators(address[] memory _collaborators) internal {
@@ -61,7 +70,13 @@ contract FileverseSubdomain is Ownable {
         for (uint256 i = 0; i < _collaborators.length; i++) {
             // Owner address cannot be null.
             address collaborator = _collaborators[i];
-            require(collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR && collaborator != address(this) && currentCollaborator != collaborator, "Cannot be sentinal");
+            require(
+                collaborator != address(0) &&
+                    collaborator != SENTINEL_COLLABORATOR &&
+                    collaborator != address(this) &&
+                    currentCollaborator != collaborator,
+                "Cannot be sentinal"
+            );
             // No duplicate collaborators allowed.
             require(collaborators[collaborator] == address(0), "No Duplicates");
             collaborators[currentCollaborator] = collaborator;
@@ -74,7 +89,12 @@ contract FileverseSubdomain is Ownable {
     event AddedCollaborator(address indexed to, address indexed by);
 
     function addCollaborator(address collaborator) public onlyOwner {
-        require(collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR && collaborator != address(this), "Cannot be sentinal");
+        require(
+            collaborator != address(0) &&
+                collaborator != SENTINEL_COLLABORATOR &&
+                collaborator != address(this),
+            "Cannot be sentinal"
+        );
         // No duplicate owners allowed.
         require(collaborators[collaborator] == address(0), "GS204");
         collaborators[collaborator] = collaborators[SENTINEL_COLLABORATOR];
@@ -90,9 +110,15 @@ contract FileverseSubdomain is Ownable {
         onlyOwner
     {
         // Only allow to remove an owner, if greater than one.
-        require(collaboratorCount - 1 >= 1, "Should have atleast greater than one owner");
+        require(
+            collaboratorCount - 1 >= 1,
+            "Should have atleast greater than one owner"
+        );
         // Validate owner address and check that it corresponds to owner index.
-        require(collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR, "Cannot be sentinal");
+        require(
+            collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR,
+            "Cannot be sentinal"
+        );
         require(collaborators[prevCollaborator] == collaborator, "GS205");
         collaborators[prevCollaborator] = collaborators[collaborator];
         collaborators[collaborator] = address(0);
@@ -101,18 +127,18 @@ contract FileverseSubdomain is Ownable {
     }
 
     function isCollaborator(address collaborator) public view returns (bool) {
-        return collaborator != SENTINEL_COLLABORATOR && collaborators[collaborator] != address(0);
+        return
+            collaborator != SENTINEL_COLLABORATOR &&
+            collaborators[collaborator] != address(0);
     }
 
     function _checkRole(address account) internal view virtual {
         if (!isCollaborator(account)) {
-            revert(
-                "Role Missing"
-            );
+            revert("Role Missing");
         }
     }
 
-    modifier onlyCollaborator()  {
+    modifier onlyCollaborator() {
         _checkRole(_msgSender());
         _;
     }
@@ -134,7 +160,6 @@ contract FileverseSubdomain is Ownable {
     function getCollaboratorCount() public view returns (uint256) {
         return collaboratorCount;
     }
-
 
     event AddedFile(uint256 indexed fileId, address indexed by);
 
@@ -188,7 +213,7 @@ contract FileverseSubdomain is Ownable {
         string calldata editDid
     ) public {
         address sender = _msgSender();
-        members[sender] = Member(sender, viewDid, editDid);
+        members[sender] = Member(viewDid, editDid);
         emit RegisteredMember(_msgSender());
     }
 
