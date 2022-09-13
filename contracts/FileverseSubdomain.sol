@@ -59,7 +59,7 @@ contract FileverseSubdomain is Ownable {
         setupMember(_msgSender(), _ownerViewDid, _ownerEditDid);
     }
 
-    function setupMember(address memory account, string memory viewDid, string memory editDid) internal {
+    function setupMember(address account, string memory viewDid, string memory editDid) internal {
         members[account] = Member(viewDid, editDid);
         emit RegisteredMember(account);
     }
