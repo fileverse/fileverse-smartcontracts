@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract FileverseSubdomain is Ownable {
     using Counters for Counters.Counter;
 
-    string public name;
+    string public metadataIPFSHash;
 
     address internal constant SENTINEL_COLLABORATOR = address(0x1);
 
@@ -48,11 +48,11 @@ contract FileverseSubdomain is Ownable {
     mapping(uint256 => File) public files;
 
     constructor(
-        string memory _name,
+        string memory _metadataIPFSHash,
         string memory _ownerViewDid,
         string memory _ownerEditDid
     ) {
-        name = _name;
+        metadataIPFSHash = _metadataIPFSHash;
         address[] memory _collaborators = new address[](1);
         _collaborators[0] = _msgSender();
         setupCollaborators(_collaborators);
@@ -159,6 +159,13 @@ contract FileverseSubdomain is Ownable {
 
     function getCollaboratorCount() public view returns (uint256) {
         return collaboratorCount;
+    }
+
+    event UpdatedMetadata(string indexed ipfsHash, address indexed by);
+
+    function updateMetadata(string memory _metadataIPFSHash) public onlyOwner {
+        metadataIPFSHash = _metadataIPFSHash;
+        emit UpdatedMetadata(metadataIPFSHash, _msgSender());
     }
 
     event AddedFile(uint256 indexed fileId, address indexed by);
