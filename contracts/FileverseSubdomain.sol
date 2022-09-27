@@ -30,6 +30,7 @@ contract FileverseSubdomain is Ownable {
     }
 
     mapping(address => Member) public members;
+    uint256 internal memberCount;
 
     enum FileType {
         PUBLIC,
@@ -61,6 +62,7 @@ contract FileverseSubdomain is Ownable {
 
     function setupMember(address account, string memory viewDid, string memory editDid) internal {
         members[account] = Member(viewDid, editDid);
+        memberCount = 1;
         emit RegisteredMember(account);
     }
 
@@ -221,6 +223,7 @@ contract FileverseSubdomain is Ownable {
     ) public {
         address sender = _msgSender();
         members[sender] = Member(viewDid, editDid);
+        memberCount++;
         emit RegisteredMember(_msgSender());
     }
 
@@ -229,6 +232,11 @@ contract FileverseSubdomain is Ownable {
     function removeSelfFromMember() public {
         address sender = _msgSender();
         delete members[sender];
+        memberCount--;
         emit RemovedMember(_msgSender());
+    }
+
+    function getMemberCount() public view returns (uint256) {
+        return memberCount;
     }
 }
