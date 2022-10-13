@@ -3,38 +3,34 @@ pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./ValidateString.sol";
 import "./FileverseSubdomain.sol";
 
-contract FileverseRegistry is ReentrancyGuard, ValidateString {
+contract FileverseRegistry is ReentrancyGuard {
     string public name = "Fileverse Registry";
     struct Subdomain {
-        string name;
         address subdomain;
-        bool isEnabled;
         uint256 index;
     }
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
-    // Mapping of bytes32 with address
-    mapping(bytes32 => address) private _ownerOf;
+    // Mapping of address of subdomain with address
+    mapping(address => address) private _ownerOf;
     // Mapping from owner to list of hash
-    mapping(address => mapping(uint256 => bytes32)) private _ownedFNS;
+    mapping(address => mapping(uint256 => address)) private _ownedSubdomain;
     // Array with all token ids, used for enumeration
-    bytes32[] private _allFNS;
+    address[] private _allSubdomain;
     // Mapping from FNS to position in the allFNS array
-    mapping(bytes32 => uint256) private _allFNSIndex;
+    mapping(address => uint256) private _allSubdomainIndex;
 
-    mapping(bytes32 => Subdomain) private _subdomainInfo;
+    mapping(address => Subdomain) private _subdomainInfo;
 
     constructor() {}
 
-    function ownerOf(string calldata _name) public view returns (address) {
-        return _ownerOf[keccak256(abi.encodePacked(_name))];
+    function ownerOf(address _subdomain) public view returns (address) {
+        return _ownerOf[_subdomain];
     }
 
     function mint(
-        string calldata _name,
         string calldata _metadataIPFSHash,
         string calldata _ownerViewDid,
         string calldata _ownerEditDid
@@ -46,74 +42,32 @@ contract FileverseRegistry is ReentrancyGuard, ValidateString {
                 _ownerEditDid
             )
         );
-        _mint(_name, msg.sender, _subdomain);
+        _mint(msg.sender, _subdomain);
     }
 
-    function _mint(
-        string calldata _name,
-        address _to,
-        address _subdomain
-    ) internal {
-        require(validateName(_name), "FileverseRegistry: name is not valid");
-        bytes32 fns = keccak256(abi.encodePacked(_name));
-        require(
-            _ownerOf[fns] == address(0),
-            "FileverseRegistry: FNS name still exist"
-        );
-        uint256 length = balancesOf(_to) + 1;
-        _ownerOf[fns] = _to;
-        _allFNS.push(fns);
-        _ownedFNS[_to][length] = fns;
-        _allFNSIndex[fns] = _allFNS.length;
-        _subdomainInfo[fns] = Subdomain(_name, _subdomain, true, length);
-        _balances[_to] = length;
-        emit NameChange(_name, msg.sender);
+    function _mint(address _owner, address _subdomain) internal {
+        require(_ownerOf[_subdomain] == address(0), "FV200");
+        uint256 length = balancesOf(_owner) + 1;
+        _ownerOf[_subdomain] = _owner;
+        _allSubdomain.push(_subdomain);
+        _ownedSubdomain[_owner][length] = _subdomain;
+        _allSubdomainIndex[_subdomain] = _allSubdomain.length;
+        _subdomainInfo[_subdomain] = Subdomain(_subdomain, length);
+        _balances[_owner] = length;
     }
 
-    function changeENS(string calldata _oldname, string calldata _name)
-        external
-        nonReentrant
-    {
-        require(validateName(_name), "FileverseRegistry: name is not valid");
-        bytes32 oldNameFns = keccak256(abi.encodePacked(_oldname));
-        bytes32 fns = keccak256(abi.encodePacked(_name));
-        uint256 _fnsIndex = _allFNSIndex[fns];
-        require(
-            _ownerOf[oldNameFns] == msg.sender,
-            "FileverseRegistry: sender is not owner of fns"
-        );
-        require(
-            _ownerOf[fns] == address(0),
-            "FileverseRegistry: FNS name still exist"
-        );
-        _ownerOf[oldNameFns] = address(0);
-        _ownerOf[fns] = msg.sender;
-        _allFNS[_fnsIndex] = fns;
-        Subdomain memory oldSubdomain = _subdomainInfo[oldNameFns];
-        _subdomainInfo[fns] = Subdomain(
-            _name,
-            oldSubdomain.subdomain,
-            true,
-            oldSubdomain.index
-        );
-        _ownedFNS[msg.sender][oldSubdomain.index] = fns;
-        delete _subdomainInfo[oldNameFns];
-        emit NameChange(_name, msg.sender);
-    }
-
-    function subdomainInfo(string calldata _name)
+    function subdomainInfo(address _subdomain)
         external
         view
         returns (Subdomain memory)
     {
-        require(validateName(_name), "FileverseRegistry: name is not valid");
-        return _subdomainInfo[keccak256(abi.encodePacked(_name))];
+        return _subdomainInfo[_subdomain];
     }
 
-    function allFNS() external view returns (Subdomain[] memory) {
-        Subdomain[] memory viewFns = new Subdomain[](_allFNS.length);
-        for (uint256 i = 0; i < _allFNS.length; i++) {
-            viewFns[i] = _subdomainInfo[_allFNS[i]];
+    function allSubdomain() external view returns (Subdomain[] memory) {
+        Subdomain[] memory viewFns = new Subdomain[](_allSubdomain.length);
+        for (uint256 i = 0; i < _allSubdomain.length; i++) {
+            viewFns[i] = _subdomainInfo[_allSubdomain[i]];
         }
         return viewFns;
     }
@@ -122,14 +76,14 @@ contract FileverseRegistry is ReentrancyGuard, ValidateString {
         return _balances[_owner];
     }
 
-    function ownedFNS(address _owner)
+    function ownedSubdomain(address _owner)
         external
         view
         returns (Subdomain[] memory)
     {
         Subdomain[] memory subdomain = new Subdomain[](balancesOf(_owner));
         for (uint256 i = 0; i < subdomain.length; i++) {
-            subdomain[i] = _subdomainInfo[_ownedFNS[_owner][i]];
+            subdomain[i] = _subdomainInfo[_ownedSubdomain[_owner][i]];
         }
         return subdomain;
     }
