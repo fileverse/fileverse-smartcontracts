@@ -47,11 +47,13 @@ contract FileverseRegistry is ReentrancyGuard {
 
     function _mint(address _owner, address _subdomain) internal {
         require(_ownerOf[_subdomain] == address(0), "FV200");
-        uint256 length = balancesOf(_owner) + 1;
+        uint256 length = _balances[_owner];
+        ++length;
+        uint256 _allSubdomainLength = _allSubdomain.length;
         _ownerOf[_subdomain] = _owner;
         _allSubdomain.push(_subdomain);
         _ownedSubdomain[_owner][length] = _subdomain;
-        _allSubdomainIndex[_subdomain] = _allSubdomain.length;
+        _allSubdomainIndex[_subdomain] = ++_allSubdomainLength;
         _subdomainInfo[_subdomain] = Subdomain(_subdomain, length);
         _balances[_owner] = length;
     }
@@ -65,8 +67,9 @@ contract FileverseRegistry is ReentrancyGuard {
     }
 
     function allSubdomain() external view returns (Subdomain[] memory) {
-        Subdomain[] memory viewFns = new Subdomain[](_allSubdomain.length);
-        for (uint256 i = 0; i < _allSubdomain.length; i++) {
+        uint256 len = _allSubdomain.length;
+        Subdomain[] memory viewFns = new Subdomain[](len);
+        for (uint256 i; i < len; ++i) {
             viewFns[i] = _subdomainInfo[_allSubdomain[i]];
         }
         return viewFns;
@@ -81,8 +84,9 @@ contract FileverseRegistry is ReentrancyGuard {
         view
         returns (Subdomain[] memory)
     {
-        Subdomain[] memory subdomain = new Subdomain[](balancesOf(_owner));
-        for (uint256 i = 0; i < subdomain.length; i++) {
+        uint256 len = balancesOf(_owner);
+        Subdomain[] memory subdomain = new Subdomain[](len);
+        for (uint256 i; i < len; ++i) {
             subdomain[i] = _subdomainInfo[_ownedSubdomain[_owner][i]];
         }
         return subdomain;
