@@ -18,8 +18,8 @@ contract FileverseTokenTemplate is
 {
     using Counters for Counters.Counter;
 
-    bytes32 public immutable PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    bytes32 public immutable MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     Counters.Counter private _tokenIdCounter;
 
     string public baseUri = "https://api.fileverse.io/token/";
