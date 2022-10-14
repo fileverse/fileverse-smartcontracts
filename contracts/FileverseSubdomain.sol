@@ -184,7 +184,7 @@ contract FileverseSubdomain is Ownable {
     ) public onlyCollaborator {
         require(bytes(metadataIPFSHash).length > 0, "FV206");
         require(bytes(contentIPFSHash).length > 0, "FV206");
-        require(bytes(gateIPFSHash).length > 0, "FV206");
+
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
         files[fileId] = File(
@@ -209,7 +209,7 @@ contract FileverseSubdomain is Ownable {
     ) public onlyCollaborator {
         require(bytes(metadataIPFSHash).length > 0, "FV206");
         require(bytes(contentIPFSHash).length > 0, "FV206");
-        require(bytes(gateIPFSHash).length > 0, "FV206");
+
         files[fileId] = File(
             metadataIPFSHash,
             contentIPFSHash,
