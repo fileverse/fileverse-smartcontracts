@@ -65,8 +65,8 @@ contract FileverseSubdomain is Ownable {
         string memory viewDid,
         string memory editDid
     ) internal {
-        require(bytes(viewDid).length > 0, "FV201");
-        require(bytes(editDid).length > 0, "FV201");
+        require(bytes(viewDid).length != 0, "FV201");
+        require(bytes(editDid).length != 0, "FV201");
         members[account] = Member(viewDid, editDid);
         memberCount = 1;
         emit RegisteredMember(account);
@@ -74,9 +74,11 @@ contract FileverseSubdomain is Ownable {
 
     function setupCollaborators(address[] memory _collaborators) internal {
         // Initializing Subdomain collaborators.
-        require(_collaborators.length > 0, "FV202");
+        uint256 len = _collaborators.length;
+        require(len != 0, "FV202");
         address currentCollaborator = SENTINEL_COLLABORATOR;
-        for (uint256 i = 0; i < _collaborators.length; i++) {
+        
+        for (uint256 i; i < len; ++i) {
             // Owner address cannot be null.
             address collaborator = _collaborators[i];
             require(
@@ -92,7 +94,7 @@ contract FileverseSubdomain is Ownable {
             currentCollaborator = collaborator;
         }
         collaborators[currentCollaborator] = SENTINEL_COLLABORATOR;
-        collaboratorCount = _collaborators.length;
+        collaboratorCount = len;
     }
 
     event AddedCollaborator(address indexed to, address indexed by);
@@ -153,7 +155,7 @@ contract FileverseSubdomain is Ownable {
         address[] memory array = new address[](collaboratorCount);
 
         // populate return array
-        uint256 index = 0;
+        uint256 index;
         address currentCollaborator = collaborators[SENTINEL_COLLABORATOR];
         while (currentCollaborator != SENTINEL_COLLABORATOR) {
             array[index] = currentCollaborator;
@@ -170,7 +172,7 @@ contract FileverseSubdomain is Ownable {
     event UpdatedMetadata(string indexed ipfsHash, address indexed by);
 
     function updateMetadata(string memory _metadataIPFSHash) public onlyOwner {
-        require(bytes(_metadataIPFSHash).length > 0, "FV206");
+        require(bytes(_metadataIPFSHash).length != 0, "FV206");
         metadataIPFSHash = _metadataIPFSHash;
         emit UpdatedMetadata(metadataIPFSHash, _msgSender());
     }
@@ -184,8 +186,8 @@ contract FileverseSubdomain is Ownable {
         FileType filetype,
         uint256 version
     ) public onlyCollaborator {
-        require(bytes(metadataIPFSHash).length > 0, "FV206");
-        require(bytes(contentIPFSHash).length > 0, "FV206");
+        require(bytes(metadataIPFSHash).length != 0, "FV206");
+        require(bytes(contentIPFSHash).length != 0, "FV206");
 
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
@@ -209,8 +211,8 @@ contract FileverseSubdomain is Ownable {
         FileType filetype,
         uint256 version
     ) public onlyCollaborator {
-        require(bytes(metadataIPFSHash).length > 0, "FV206");
-        require(bytes(contentIPFSHash).length > 0, "FV206");
+        require(bytes(metadataIPFSHash).length != 0, "FV206");
+        require(bytes(contentIPFSHash).length != 0, "FV206");
 
         files[fileId] = File(
             metadataIPFSHash,
@@ -232,8 +234,8 @@ contract FileverseSubdomain is Ownable {
         string calldata viewDid,
         string calldata editDid
     ) public {
-        require(bytes(viewDid).length > 0, "FV201");
-        require(bytes(editDid).length > 0, "FV201");
+        require(bytes(viewDid).length != 0, "FV201");
+        require(bytes(editDid).length != 0, "FV201");
         address sender = _msgSender();
         members[sender] = Member(viewDid, editDid);
         memberCount++;

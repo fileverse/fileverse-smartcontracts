@@ -9,7 +9,13 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /// @custom:security-contact security@adaptiv.me
-contract FileverseTokenTemplate is ERC721, ERC721Enumerable, Pausable, AccessControl, ERC721Burnable {
+contract FileverseTokenTemplate is
+    ERC721,
+    ERC721Enumerable,
+    Pausable,
+    AccessControl,
+    ERC721Burnable
+{
     using Counters for Counters.Counter;
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -24,10 +30,7 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, Pausable, AccessCon
         address ownerAddress,
         string memory newBaseUri
     ) ERC721(name, symbol) {
-        require(
-            ownerAddress != address(0),
-            "ownerAddress cannot be zero"
-        );
+        require(ownerAddress != address(0), "ownerAddress cannot be zero");
         baseUri = newBaseUri;
         _grantRole(DEFAULT_ADMIN_ROLE, ownerAddress);
         _grantRole(PAUSER_ROLE, ownerAddress);
@@ -40,7 +43,11 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, Pausable, AccessCon
         return baseUri;
     }
 
-    function setBaseURI(string memory newBaseUri) external onlyRole(MINTER_ROLE) returns (string memory) {
+    function setBaseURI(string memory newBaseUri)
+        external
+        onlyRole(MINTER_ROLE)
+        returns (string memory)
+    {
         baseUri = newBaseUri;
         return baseUri;
     }
@@ -59,9 +66,14 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, Pausable, AccessCon
         _safeMint(to, tokenId);
     }
 
-    function safeBatchMint(address[] memory to) public onlyRole(MINTER_ROLE) returns (bool) {
-        if(to.length < 1 || to.length > 50) return false;
-        for (uint8 i = 0; i < to.length; i++){
+    function safeBatchMint(address[] memory to)
+        public
+        onlyRole(MINTER_ROLE)
+        returns (bool)
+    {
+        uint256 len = to.length;
+        if (len < 1 || len > 50) return false;
+        for (uint8 i; i < len; ++i) {
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
             _safeMint(to[i], tokenId);
@@ -69,11 +81,11 @@ contract FileverseTokenTemplate is ERC721, ERC721Enumerable, Pausable, AccessCon
         return true;
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-        internal
-        whenNotPaused
-        override(ERC721, ERC721Enumerable)
-    {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override(ERC721, ERC721Enumerable) whenNotPaused {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
