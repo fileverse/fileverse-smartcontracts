@@ -3,9 +3,10 @@ pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./FileverseSubdomain.sol";
 
-contract FileverseRegistry is ReentrancyGuard {
+contract FileverseRegistry is ReentrancyGuard, ERC2771Context {
     string public name = "Fileverse Registry";
     struct Subdomain {
         address subdomain;
@@ -24,7 +25,11 @@ contract FileverseRegistry is ReentrancyGuard {
 
     mapping(address => Subdomain) private _subdomainInfo;
 
-    constructor() {}
+    address private immutable trustedForwarder;
+
+    constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {
+        trustedForwarder = _trustedForwarder;
+    }
 
     function ownerOf(address _subdomain) public view returns (address) {
         return _ownerOf[_subdomain];
@@ -35,14 +40,17 @@ contract FileverseRegistry is ReentrancyGuard {
         string calldata _ownerViewDid,
         string calldata _ownerEditDid
     ) external nonReentrant {
+        address owner = _msgSender();
         address _subdomain = address(
             new FileverseSubdomain(
                 _metadataIPFSHash,
                 _ownerViewDid,
-                _ownerEditDid
+                _ownerEditDid,
+                owner,
+                trustedForwarder
             )
         );
-        _mint(msg.sender, _subdomain);
+        _mint(owner, _subdomain);
     }
 
     function _mint(address _owner, address _subdomain) internal {

@@ -3,9 +3,11 @@ pragma solidity 0.8.16;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+
 
 /// @custom:security-contact security@fileverse.io
-contract FileverseSubdomain is Ownable {
+contract FileverseSubdomain is ERC2771Context, Ownable {
     using Counters for Counters.Counter;
 
     string public metadataIPFSHash;
@@ -51,13 +53,16 @@ contract FileverseSubdomain is Ownable {
     constructor(
         string memory _metadataIPFSHash,
         string memory _ownerViewDid,
-        string memory _ownerEditDid
-    ) {
+        string memory _ownerEditDid,
+        address owner,
+        address _trustedForwarder
+    ) ERC2771Context(_trustedForwarder) {
         metadataIPFSHash = _metadataIPFSHash;
         address[] memory _collaborators = new address[](1);
-        _collaborators[0] = _msgSender();
+        _collaborators[0] = owner;
         setupCollaborators(_collaborators);
-        setupMember(_msgSender(), _ownerViewDid, _ownerEditDid);
+        _transferOwnership(owner);
+        setupMember(owner, _ownerViewDid, _ownerEditDid);
     }
 
     function setupMember(
@@ -254,4 +259,12 @@ contract FileverseSubdomain is Ownable {
     function getMemberCount() public view returns (uint256) {
         return memberCount;
     }
+
+    function _msgSender() internal view override(Context, ERC2771Context) returns (address sender) {
+        return ERC2771Context._msgSender();
+    }
+
+    function _msgData() internal view override(Context, ERC2771Context) returns (bytes calldata) {
+        return ERC2771Context._msgData();
+    }    
 }
