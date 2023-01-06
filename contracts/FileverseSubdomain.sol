@@ -36,7 +36,7 @@ contract FileverseSubdomain is Ownable {
         PUBLIC,
         PRIVATE,
         GATED,
-        MEMBER_PRIVATE,
+        MEMBER_PRIVATE
     }
 
     struct File {
@@ -78,7 +78,7 @@ contract FileverseSubdomain is Ownable {
         uint256 len = _collaborators.length;
         require(len != 0, "FV202");
         address currentCollaborator = SENTINEL_COLLABORATOR;
-        
+
         for (uint256 i; i < len; ++i) {
             // Owner address cannot be null.
             address collaborator = _collaborators[i];
@@ -117,10 +117,10 @@ contract FileverseSubdomain is Ownable {
 
     event RemovedCollaborator(address indexed to, address indexed by);
 
-    function removeCollaborator(address prevCollaborator, address collaborator)
-        public
-        onlyOwner
-    {
+    function removeCollaborator(
+        address prevCollaborator,
+        address collaborator
+    ) public onlyOwner {
         // Only allow to remove an owner, if greater than one.
         require(collaboratorCount - 1 >= 1, "FV205");
         // Validate owner address and check that it corresponds to owner index.
