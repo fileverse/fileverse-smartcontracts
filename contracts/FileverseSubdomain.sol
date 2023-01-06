@@ -35,7 +35,8 @@ contract FileverseSubdomain is Ownable {
     enum FileType {
         PUBLIC,
         PRIVATE,
-        GATED
+        GATED,
+        MEMBER_PRIVATE,
     }
 
     struct File {
