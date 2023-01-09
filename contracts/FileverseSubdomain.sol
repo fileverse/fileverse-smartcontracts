@@ -259,7 +259,7 @@ contract FileverseSubdomain is Ownable {
         return memberCount;
     }
 
-    function addKeyVerifer(
+    function addKeyVerifiers(
         string memory portalEncryptionKeyVerifier,
         string memory portalDecryptionKeyVerifier,
         string memory memberEncryptionKeyVerifier,
