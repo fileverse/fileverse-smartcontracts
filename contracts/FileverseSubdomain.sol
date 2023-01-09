@@ -16,10 +16,13 @@ contract FileverseSubdomain is Ownable {
     uint256 internal collaboratorCount;
 
     Counters.Counter private _fileIdCounter;
+    Counters.Counter private _keyVerifierCounter;
 
     struct KeyVerifier {
-        string decryptionKeyVerifier;
-        string encryptionKeyVerifier;
+        string portalEncryptionKeyVerifier;
+        string portalDecryptionKeyVerifier;
+        string memberEncryptionKeyVerifier;
+        string memberDecryptionKeyVerifier;
     }
 
     mapping(uint256 => KeyVerifier) public keyVerifiers;
@@ -254,5 +257,24 @@ contract FileverseSubdomain is Ownable {
 
     function getMemberCount() public view returns (uint256) {
         return memberCount;
+    }
+
+    function addKeyVerifer(
+        string memory portalEncryptionKeyVerifier,
+        string memory portalDecryptionKeyVerifier,
+        string memory memberEncryptionKeyVerifier,
+        string memory memberDecryptionKeyVerifier
+    ) public onlyCollaborator {
+        require(bytes(portalEncryptionKeyVerifier).length != 0, "FV206");
+        require(bytes(portalDecryptionKeyVerifier).length != 0, "FV206");
+        require(bytes(memberEncryptionKeyVerifier).length != 0, "FV206");
+        require(bytes(memberDecryptionKeyVerifier).length != 0, "FV206");
+        uint256 keyId = _keyVerifierCounter.current();
+        keyVerifiers[keyId] = KeyVerifier(
+            portalEncryptionKeyVerifier,
+            portalDecryptionKeyVerifier,
+            memberEncryptionKeyVerifier,
+            memberDecryptionKeyVerifier
+        );
     }
 }
