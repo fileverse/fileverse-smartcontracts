@@ -31,6 +31,7 @@ contract FileverseRegistry is ReentrancyGuard, ERC2771Context {
         trustedForwarder = _trustedForwarder;
     }
 
+    // Returns owner of subdomain
     function ownerOf(address _subdomain) public view returns (address) {
         return _ownerOf[_subdomain];
     }
@@ -66,6 +67,7 @@ contract FileverseRegistry is ReentrancyGuard, ERC2771Context {
         _balances[_owner] = length;
     }
 
+    // Returns data for subdomain on address _subdomain 
     function subdomainInfo(address _subdomain)
         external
         view
@@ -74,6 +76,7 @@ contract FileverseRegistry is ReentrancyGuard, ERC2771Context {
         return _subdomainInfo[_subdomain];
     }
 
+    // Returns all the subdomains in registry
     function allSubdomain() external view returns (Subdomain[] memory) {
         uint256 len = _allSubdomain.length;
         Subdomain[] memory viewFns = new Subdomain[](len);
@@ -83,10 +86,12 @@ contract FileverseRegistry is ReentrancyGuard, ERC2771Context {
         return viewFns;
     }
 
+    // Returns number of subdomain owned by the address _owner
     function balancesOf(address _owner) public view returns (uint256) {
         return _balances[_owner];
     }
 
+    // Returns a list of subdomain that are owned by the address _owner
     function ownedSubdomain(address _owner)
         external
         view
