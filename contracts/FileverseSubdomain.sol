@@ -238,7 +238,7 @@ contract FileverseSubdomain is ERC2771Context, Ownable {
     function registerSelfFromMember(
         string calldata viewDid,
         string calldata editDid
-    ) public {
+    ) public onlyCollaborator {
         require(bytes(viewDid).length != 0, "FV201");
         require(bytes(editDid).length != 0, "FV201");
         address sender = _msgSender();
@@ -249,7 +249,7 @@ contract FileverseSubdomain is ERC2771Context, Ownable {
 
     event RemovedMember(address indexed to);
 
-    function removeSelfFromMember() public {
+    function removeSelfFromMember() public onlyCollaborator {
         address sender = _msgSender();
         delete members[sender];
         memberCount--;
