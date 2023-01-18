@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 
 /// @custom:security-contact security@fileverse.io
-contract FileverseSubdomain is ERC2771Context, Ownable {
+contract FileversePortal is ERC2771Context, Ownable {
     using Counters for Counters.Counter;
 
     string public metadataIPFSHash;
@@ -102,7 +102,7 @@ contract FileverseSubdomain is ERC2771Context, Ownable {
         collaboratorCount = len;
     }
 
-    event AddedCollaborator(address indexed to, address indexed by);
+    event AddedCollaborator(address indexed account, address indexed by);
 
     function addCollaborator(address collaborator) public onlyOwner {
         require(
@@ -119,7 +119,7 @@ contract FileverseSubdomain is ERC2771Context, Ownable {
         emit AddedCollaborator(collaborator, _msgSender());
     }
 
-    event RemovedCollaborator(address indexed to, address indexed by);
+    event RemovedCollaborator(address indexed account, address indexed by);
 
     function removeCollaborator(address prevCollaborator, address collaborator)
         public
@@ -174,59 +174,59 @@ contract FileverseSubdomain is ERC2771Context, Ownable {
         return collaboratorCount;
     }
 
-    event UpdatedMetadata(string indexed ipfsHash, address indexed by);
+    event UpdatedPortalMetadata(string metadataIPFSHash, address indexed by);
 
     function updateMetadata(string memory _metadataIPFSHash) public onlyOwner {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         metadataIPFSHash = _metadataIPFSHash;
-        emit UpdatedMetadata(metadataIPFSHash, _msgSender());
+        emit UpdatedPortalMetadata(metadataIPFSHash, _msgSender());
     }
 
-    event AddedFile(uint256 indexed fileId, address indexed by);
+    event AddedFile(uint256 indexed fileId, string metadataIPFSHash, string contentIPFSHash, string gateIPFSHash, address indexed by);
 
     function addFile(
-        string calldata metadataIPFSHash,
-        string calldata contentIPFSHash,
-        string calldata gateIPFSHash,
+        string calldata _metadataIPFSHash,
+        string calldata _contentIPFSHash,
+        string calldata _gateIPFSHash,
         FileType filetype,
         uint256 version
     ) public onlyCollaborator {
-        require(bytes(metadataIPFSHash).length != 0, "FV206");
-        require(bytes(contentIPFSHash).length != 0, "FV206");
+        require(bytes(_metadataIPFSHash).length != 0, "FV206");
+        require(bytes(_contentIPFSHash).length != 0, "FV206");
 
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
         files[fileId] = File(
-            metadataIPFSHash,
-            contentIPFSHash,
-            gateIPFSHash,
+            _metadataIPFSHash,
+            _contentIPFSHash,
+            _gateIPFSHash,
             filetype,
             version
         );
-        emit AddedFile(fileId, _msgSender());
+        emit AddedFile(fileId, _metadataIPFSHash, _contentIPFSHash, _gateIPFSHash, _msgSender());
     }
 
-    event EditedFile(uint256 indexed fileId, address indexed by);
+    event EditedFile(uint256 indexed fileId, string metadataIPFSHash, string contentIPFSHash, string gateIPFSHash, address indexed by);
 
     function editFile(
         uint256 fileId,
-        string calldata metadataIPFSHash,
-        string calldata contentIPFSHash,
-        string calldata gateIPFSHash,
+        string calldata _metadataIPFSHash,
+        string calldata _contentIPFSHash,
+        string calldata _gateIPFSHash,
         FileType filetype,
         uint256 version
     ) public onlyCollaborator {
-        require(bytes(metadataIPFSHash).length != 0, "FV206");
-        require(bytes(contentIPFSHash).length != 0, "FV206");
+        require(bytes(_metadataIPFSHash).length != 0, "FV206");
+        require(bytes(_contentIPFSHash).length != 0, "FV206");
 
         files[fileId] = File(
-            metadataIPFSHash,
-            contentIPFSHash,
-            gateIPFSHash,
+            _metadataIPFSHash,
+            _contentIPFSHash,
+            _gateIPFSHash,
             filetype,
             version
         );
-        emit EditedFile(fileId, _msgSender());
+        emit EditedFile(fileId, _metadataIPFSHash, _contentIPFSHash, _gateIPFSHash, _msgSender());
     }
 
     function getFileCount() public view returns (uint256) {
@@ -235,7 +235,7 @@ contract FileverseSubdomain is ERC2771Context, Ownable {
 
     event RegisteredMember(address indexed to);
 
-    function registerSelfFromMember(
+    function registerSelfToMember(
         string calldata viewDid,
         string calldata editDid
     ) public onlyCollaborator {

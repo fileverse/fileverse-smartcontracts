@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-/// @custom:security-contact security@adaptiv.me
+/// @custom:security-contact security@fileverse.io
 contract FileverseTokenTemplate is
     ERC721,
     ERC721Enumerable,
