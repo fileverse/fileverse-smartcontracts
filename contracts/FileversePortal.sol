@@ -233,7 +233,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         return _fileIdCounter.current();
     }
 
-    event RegisteredMember(address indexed to);
+    event RegisteredMember(address indexed account);
 
     function registerSelfToMember(
         string calldata viewDid,
@@ -247,7 +247,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         emit RegisteredMember(_msgSender());
     }
 
-    event RemovedMember(address indexed to);
+    event RemovedMember(address indexed account);
 
     function removeSelfFromMember() public onlyCollaborator {
         address sender = _msgSender();
