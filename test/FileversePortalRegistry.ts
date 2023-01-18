@@ -65,8 +65,6 @@ describe("Fileverse Portal Registry", function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
       deployPortalFixture
     );
-
-    // const owner = "0x6b8ddbA9c380e68201F76072523C4aC9AC4113ae";
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
