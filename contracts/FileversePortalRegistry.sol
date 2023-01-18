@@ -36,6 +36,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         return _ownerOf[_portal];
     }
 
+    event Mint(address indexed account, address indexed portal);
     function mint(
         string calldata _metadataIPFSHash,
         string calldata _ownerViewDid,
@@ -52,6 +53,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
             )
         );
         _mint(owner, _portal);
+        emit Mint(owner, _portal);
     }
 
     function _mint(address _owner, address _portal) internal {
