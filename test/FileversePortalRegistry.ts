@@ -85,4 +85,57 @@ describe("Fileverse Portal Registry", function () {
     const allPortals = await fileversePortalRegistry.allPortal();
     expect(allPortals.length).to.equal(1);
   });
+
+  it("should be able to fire a mint event on creating a fileverse portal", async function () {
+    const { fileversePortalRegistry, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
+    const ownerViewDid =
+      "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
+    const ownerEditDid =
+      "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+
+    await fileversePortalRegistry.mint(
+      metadataIPFSHash,
+      ownerViewDid,
+      ownerEditDid
+    );
+    await fileversePortalRegistry.mint(
+      metadataIPFSHash,
+      ownerViewDid,
+      ownerEditDid
+    );
+
+    expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(2);
+    const ownedPortals = await fileversePortalRegistry.ownedPortal(
+      owner.address
+    );
+    expect(ownedPortals.length).to.equal(2);
+    const allPortals = await fileversePortalRegistry.allPortal();
+    expect(allPortals.length).to.equal(2);
+  });
+
+  it("should be able to create two fileverse portal", async function () {
+    const { fileversePortalRegistry, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
+    const ownerViewDid =
+      "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
+    const ownerEditDid =
+      "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+
+    await expect(
+      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+    ).to.emit(fileversePortalRegistry, "Mint");
+
+    expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
+    const ownedPortals = await fileversePortalRegistry.ownedPortal(
+      owner.address
+    );
+    expect(ownedPortals.length).to.equal(1);
+    const allPortals = await fileversePortalRegistry.allPortal();
+    expect(allPortals.length).to.equal(1);
+  });
 });
