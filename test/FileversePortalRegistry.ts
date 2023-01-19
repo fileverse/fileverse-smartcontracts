@@ -25,7 +25,9 @@ describe("Fileverse Portal Registry", function () {
   }
 
   it("should be able to deploy with correct number of parameters", async function () {
-    const { fileversePortalRegistry } = await loadFixture(deployPortalRegistryFixture);
+    const { fileversePortalRegistry } = await loadFixture(
+      deployPortalRegistryFixture
+    );
     expect(await fileversePortalRegistry.name()).to.equal(
       "Fileverse Portal Registry"
     );
@@ -61,7 +63,7 @@ describe("Fileverse Portal Registry", function () {
     ).to.equal(true);
   });
 
-  it("should be able to mint a fileverse portal", async function () {
+  it("should be able to mint a fileverse portal with proper parameters", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
       deployPortalRegistryFixture
     );
@@ -84,6 +86,19 @@ describe("Fileverse Portal Registry", function () {
     expect(ownedPortals.length).to.equal(1);
     const allPortals = await fileversePortalRegistry.allPortal();
     expect(allPortals.length).to.equal(1);
+  });
+
+  it("should not be able to mint a fileverse portal with improper parameters", async function () {
+    const { fileversePortalRegistry } = await loadFixture(
+      deployPortalRegistryFixture
+    );
+    const metadataIPFSHash = "";
+    const ownerViewDid = "";
+    const ownerEditDid = "";
+
+    await expect(
+      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+    ).to.revertedWith("FV201");
   });
 
   it("should be able to fire a mint event on creating a fileverse portal", async function () {
@@ -318,5 +333,14 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
     expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await deployedFileversePortal.getMemberCount()).to.equal(1);
     expect(await deployedFileversePortal.getFileCount()).to.equal(0);
+  });
+
+  it("should be able to deploy with correct collaborator set", async function () {
+    const { deployedFileversePortal, owner } = await loadFixture(
+      deployPortalRegistryFixture
+    );
+    expect(
+      await deployedFileversePortal.isCollaborator(owner.address)
+    ).to.equal(true);
   });
 });
