@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
-describe("Fileverse Portal", function () {
+describe("Fileverse Portal: Owner", function () {
   async function deployPortalFixture() {
     const [owner, addr1, addr2] = await ethers.getSigners();
     const FileversePortal = await ethers.getContractFactory("FileversePortal");
@@ -33,6 +33,7 @@ describe("Fileverse Portal", function () {
       addr1,
       addr2,
       AddressOne: "0x0000000000000000000000000000000000000001",
+      ipfsHash: "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp6",
     };
   }
 
@@ -47,6 +48,19 @@ describe("Fileverse Portal", function () {
     expect(await fileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await fileversePortal.getMemberCount()).to.equal(1);
     expect(await fileversePortal.getFileCount()).to.equal(0);
+  });
+
+  it("should be collaborator by default", async function () {
+    const { fileversePortal, owner } = await loadFixture(deployPortalFixture);
+    expect(await fileversePortal.isCollaborator(owner.address)).to.equal(true);
+  });
+
+  it("should be member by default", async function () {
+    const { fileversePortal, owner, ownerViewDid, ownerEditDid } =
+      await loadFixture(deployPortalFixture);
+    const member = await fileversePortal.members(owner.address);
+    expect(member.editDid).to.equal(ownerEditDid);
+    expect(member.viewDid).to.equal(ownerViewDid);
   });
 
   it("should be able add collaborator by owner", async function () {
@@ -76,5 +90,39 @@ describe("Fileverse Portal", function () {
       .withArgs(addr1.address, owner.address);
     expect(await fileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await fileversePortal.isCollaborator(addr1.address)).to.equal(false);
+  });
+
+  it("should be able to update metadata", async function () {
+    const { fileversePortal, ipfsHash, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    expect(await fileversePortal.updateMetadata(ipfsHash))
+      .to.emit(fileversePortal, "UpdatedPortalMetadata")
+      .withArgs(ipfsHash, owner.address);
+  });
+
+  it("should be able to add file", async function () {
+    const { fileversePortal, ipfsHash, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0))
+      .to.emit(fileversePortal, "AddedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+  });
+
+  it("should be able to edit file", async function () {
+    const { fileversePortal, ipfsHash, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0))
+      .to.emit(fileversePortal, "AddedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+    expect(
+      await fileversePortal.editFile(0, ipfsHash, ipfsHash, ipfsHash, 1, 0)
+    )
+      .to.emit(fileversePortal, "EditedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
   });
 });
