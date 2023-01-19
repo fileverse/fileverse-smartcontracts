@@ -224,3 +224,57 @@ describe("Fileverse Portal Registry", function () {
     expect(portalInfo.portal).to.equal(portal);
   });
 });
+
+describe("Fileverse Portal Registry: Deployed Portal", function () {
+  async function deployPortalFixture() {
+    const [owner, addr1, addr2] = await ethers.getSigners();
+    const FileversePortalRegistry = await ethers.getContractFactory(
+      "FileversePortalRegistry"
+    );
+    const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
+    const fileversePortalRegistry = await FileversePortalRegistry.deploy(
+      trustedForwarder
+    );
+    await fileversePortalRegistry.deployed();
+    const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
+    const ownerViewDid =
+      "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
+    const ownerEditDid =
+      "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+
+    const data = await fileversePortalRegistry.mint(
+      metadataIPFSHash,
+      ownerViewDid,
+      ownerEditDid
+    );
+    const txReciept = await data.wait();
+    const mintEvent = txReciept.events.find((elem) => elem.event === "Mint");
+    const { portal } = mintEvent.args;
+    const FileversePortal = await ethers.getContractFactory("FileversePortal");
+    const deployedFileversePortal = await FileversePortal.attach(portal);
+    // Fixtures can return anything you consider useful for your tests
+    return {
+      portal,
+      FileversePortal,
+      deployedFileversePortal,
+      FileversePortalRegistry,
+      fileversePortalRegistry,
+      trustedForwarder,
+      owner,
+      addr1,
+      addr2,
+    };
+  }
+
+  it("should be able to deploy with correct initial state", async function () {
+    const { deployedFileversePortal, trustedForwarder, owner } =
+      await loadFixture(deployPortalFixture);
+    expect(
+      await deployedFileversePortal.isTrustedForwarder(trustedForwarder)
+    ).to.equal(true);
+    expect(await deployedFileversePortal.owner()).to.equal(owner.address);
+    expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
+    expect(await deployedFileversePortal.getMemberCount()).to.equal(1);
+    expect(await deployedFileversePortal.getFileCount()).to.equal(0);
+  });
+});
