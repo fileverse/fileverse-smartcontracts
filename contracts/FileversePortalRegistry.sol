@@ -11,6 +11,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     struct Portal {
         address portal;
         uint256 index;
+        uint256 tokenId;
     }
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
@@ -59,13 +60,13 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     function _mint(address _owner, address _portal) internal {
         require(_ownerOf[_portal] == address(0), "FV200");
         uint256 length = _balances[_owner];
-        ++length;
         uint256 _allPortalLength = _allPortal.length;
         _ownerOf[_portal] = _owner;
         _allPortal.push(_portal);
         _ownedPortal[_owner][length] = _portal;
         _allPortalIndex[_portal] = ++_allPortalLength;
-        _portalInfo[_portal] = Portal(_portal, length);
+        _portalInfo[_portal] = Portal(_portal, length, _allPortalLength);
+        ++length;
         _balances[_owner] = length;
     }
 
@@ -102,7 +103,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         uint256 len = balancesOf(_owner);
         Portal[] memory portal = new Portal[](len);
         for (uint256 i; i < len; ++i) {
-            portal[i] = _portalInfo[_ownedPortal[_owner][i + 1]];
+            portal[i] = _portalInfo[_ownedPortal[_owner][i]];
         }
         return portal;
     }
