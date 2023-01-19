@@ -129,14 +129,54 @@ describe("Fileverse Portal Registry", function () {
     await expect(
       fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
     ).to.emit(fileversePortalRegistry, "Mint");
+    await expect(
+      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+    ).to.emit(fileversePortalRegistry, "Mint");
+
+    expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(2);
+    const ownedPortals = await fileversePortalRegistry.ownedPortal(
+      owner.address
+    );
+    expect(ownedPortals.length).to.equal(2);
+    const allPortals = await fileversePortalRegistry.allPortal();
+    expect(allPortals.length).to.equal(2);
+  });
+
+  it("should be able to create two fileverse portal by two addresses", async function () {
+    const { fileversePortalRegistry, owner, addr1 } = await loadFixture(
+      deployPortalFixture
+    );
+    const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
+    const ownerViewDid =
+      "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
+    const ownerEditDid =
+      "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+
+    await expect(
+      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+    ).to.emit(fileversePortalRegistry, "Mint");
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
     const ownedPortals = await fileversePortalRegistry.ownedPortal(
       owner.address
     );
     expect(ownedPortals.length).to.equal(1);
+
+    await expect(
+      fileversePortalRegistry
+        .connect(addr1)
+        .mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+    ).to.emit(fileversePortalRegistry, "Mint");
+    expect(
+      await fileversePortalRegistry.connect(addr1).balancesOf(addr1.address)
+    ).to.equal(1);
+    const ownedPortalsAddr1 = await fileversePortalRegistry.ownedPortal(
+      addr1.address
+    );
+    expect(ownedPortalsAddr1.length).to.equal(1);
+
     const allPortals = await fileversePortalRegistry.allPortal();
-    expect(allPortals.length).to.equal(1);
+    expect(allPortals.length).to.equal(2);
   });
 
   it("should have the sender of the txn as owner", async function () {
