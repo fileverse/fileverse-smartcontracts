@@ -231,7 +231,8 @@ describe("Fileverse Portal Registry", function () {
       owner.address
     );
     const portalInfo = await fileversePortalRegistry.portalInfo(portal);
-    expect(portalInfo.index).to.equal(1);
+    expect(portalInfo.index).to.equal(0);
+    expect(portalInfo.tokenId).to.equal(1);
     expect(portalInfo.portal).to.equal(portal);
   });
 
@@ -260,7 +261,8 @@ describe("Fileverse Portal Registry", function () {
     const portalInfo = await fileversePortalRegistry
       .connect(addr1)
       .portalInfo(portal);
-    expect(portalInfo.index).to.equal(1);
+    expect(portalInfo.index).to.equal(0);
+    expect(portalInfo.tokenId).to.equal(1);
     expect(portalInfo.portal).to.equal(portal);
   });
 });
