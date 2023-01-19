@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 
 describe("Fileverse Portal Registry", function () {
-  async function deployPortalFixture() {
+  async function deployPortalRegistryFixture() {
     const [owner, addr1, addr2] = await ethers.getSigners();
     const FileversePortalRegistry = await ethers.getContractFactory(
       "FileversePortalRegistry"
@@ -25,7 +25,7 @@ describe("Fileverse Portal Registry", function () {
   }
 
   it("should be able to deploy with correct number of parameters", async function () {
-    const { fileversePortalRegistry } = await loadFixture(deployPortalFixture);
+    const { fileversePortalRegistry } = await loadFixture(deployPortalRegistryFixture);
     expect(await fileversePortalRegistry.name()).to.equal(
       "Fileverse Portal Registry"
     );
@@ -33,7 +33,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should be able to deploy with correct empty state", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
 
     expect(await fileversePortalRegistry.name()).to.equal(
@@ -50,7 +50,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should have the same trusted forwarder", async function () {
     const { fileversePortalRegistry, trustedForwarder } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
 
     expect(await fileversePortalRegistry.name()).to.equal(
@@ -63,7 +63,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should be able to mint a fileverse portal", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -88,7 +88,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should be able to fire a mint event on creating a fileverse portal", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -118,7 +118,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should be able to create two fileverse portal", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -144,7 +144,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should be able to create two fileverse portal by two addresses", async function () {
     const { fileversePortalRegistry, owner, addr1 } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -181,7 +181,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should have the sender of the txn as owner", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -209,7 +209,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should have functional getter functions as owner", async function () {
     const { fileversePortalRegistry, owner } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -237,7 +237,7 @@ describe("Fileverse Portal Registry", function () {
 
   it("should have functional getter functions as reader", async function () {
     const { fileversePortalRegistry, owner, addr1 } = await loadFixture(
-      deployPortalFixture
+      deployPortalRegistryFixture
     );
     const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
     const ownerViewDid =
@@ -266,7 +266,7 @@ describe("Fileverse Portal Registry", function () {
 });
 
 describe("Fileverse Portal Registry: Deployed Portal", function () {
-  async function deployPortalFixture() {
+  async function deployPortalRegistryFixture() {
     const [owner, addr1, addr2] = await ethers.getSigners();
     const FileversePortalRegistry = await ethers.getContractFactory(
       "FileversePortalRegistry"
@@ -308,7 +308,7 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
 
   it("should be able to deploy with correct initial state", async function () {
     const { deployedFileversePortal, trustedForwarder, owner } =
-      await loadFixture(deployPortalFixture);
+      await loadFixture(deployPortalRegistryFixture);
     expect(
       await deployedFileversePortal.isTrustedForwarder(trustedForwarder)
     ).to.equal(true);
