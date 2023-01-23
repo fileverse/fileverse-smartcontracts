@@ -13,6 +13,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         uint256 index;
         uint256 tokenId;
     }
+
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
     // Mapping of address of portal with address
@@ -23,9 +24,9 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     address[] private _allPortal;
     // Mapping from FNS to position in the allFNS array
     mapping(address => uint256) private _allPortalIndex;
-
+    // Mapping from address of portal to Portal Data
     mapping(address => Portal) private _portalInfo;
-
+    // address of trusted forwarder
     address private immutable trustedForwarder;
 
     /**
