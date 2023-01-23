@@ -1,0 +1,150 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+import "./FileversePortal.sol";
+
+contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
+    string public name = "Fileverse Portal Registry";
+    struct Portal {
+        address portal;
+        uint256 index;
+        uint256 tokenId;
+    }
+
+    // Mapping owner address to token count
+    mapping(address => uint256) private _balances;
+    // Mapping of address of portal with address
+    mapping(address => address) private _ownerOf;
+    // Mapping from owner to list of hash
+    mapping(address => mapping(uint256 => address)) private _ownedPortal;
+    // Array with all token ids, used for enumeration
+    address[] private _allPortal;
+    // Mapping from FNS to position in the allFNS array
+    mapping(address => uint256) private _allPortalIndex;
+    // Mapping from address of portal to Portal Data
+    mapping(address => Portal) private _portalInfo;
+    // address of trusted forwarder
+    address private immutable trustedForwarder;
+
+    /**
+     * @notice constructor for the fileverse portal registry smart contract
+     * @param _trustedForwarder - instance of the trusted forwarder
+     */
+    constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {
+        trustedForwarder = _trustedForwarder;
+    }
+
+    /**
+     * @notice get function that returns the owner address of the portal
+     * @param _portal - The address of the portal
+     * @return owner - The address of the owner
+     */
+    function ownerOf(address _portal) public view returns (address) {
+        return _ownerOf[_portal];
+    }
+
+    event Mint(address indexed account, address indexed portal);
+
+    /**
+     * @notice Create a new FileversePortal contract and assign it to the owner 
+     * who calls this function
+     * @dev This function also emits a Mint event
+     * @param _metadataIPFSHash - The IPFS hash of the metadata file.
+     * @param _ownerViewDid - owner's view DID
+     * @param _ownerEditDid - owner's edit DID
+     */
+    function mint(
+        string calldata _metadataIPFSHash,
+        string calldata _ownerViewDid,
+        string calldata _ownerEditDid
+    ) external nonReentrant {
+        address owner = _msgSender();
+        address _portal = address(
+            new FileversePortal(
+                _metadataIPFSHash,
+                _ownerViewDid,
+                _ownerEditDid,
+                owner,
+                trustedForwarder
+            )
+        );
+        _mint(owner, _portal);
+        emit Mint(owner, _portal);
+    }
+
+    /**
+     * @notice A private function that is called by the public function `mint`. 
+     * It is used to create a new portal and assign it to the owner of the 
+     * contract.
+     * @param _owner - The address of the owner
+     * @param _portal - The address of the portal
+     */
+    function _mint(address _owner, address _portal) internal {
+        require(_ownerOf[_portal] == address(0), "FV200");
+        uint256 length = _balances[_owner];
+        uint256 _allPortalLength = _allPortal.length;
+        _ownerOf[_portal] = _owner;
+        _allPortal.push(_portal);
+        _ownedPortal[_owner][length] = _portal;
+        _allPortalIndex[_portal] = ++_allPortalLength;
+        _portalInfo[_portal] = Portal(_portal, length, _allPortalLength);
+        ++length;
+        _balances[_owner] = length;
+    }
+
+    /**
+     * @notice `portalInfo` returns the `Portal` struct for a given portal address
+     * @param _portal - The address of the portal
+     * @return portalInfo The Portal memory struct.
+     */
+    function portalInfo(address _portal)
+        external
+        view
+        returns (Portal memory)
+    {
+        return _portalInfo[_portal];
+    }
+
+    /**
+     * @notice This function returns an array of all the portals in the registry.
+     * @return portals The array of Portal memory struct with all the portals
+     */
+    function allPortal() external view returns (Portal[] memory) {
+        uint256 len = _allPortal.length;
+        Portal[] memory viewFns = new Portal[](len);
+        for (uint256 i; i < len; ++i) {
+            viewFns[i] = _portalInfo[_allPortal[i]];
+        }
+        return viewFns;
+    }
+
+    /**
+     * @notice Returning the number of portals owned by the address _owner
+     * @param _owner address of the owner who's balance if being queried
+     * @return balance The array of Portal memory struct with all the portals
+     */
+    function balancesOf(address _owner) public view returns (uint256) {
+        return _balances[_owner];
+    }
+
+    /**
+     * @notice Returning a list of portals that are owned by the address _owner
+     * @param _owner address of the owner who's balance if being queried
+     * @return portals The array of Portal memory struct owned by the address _owner
+     */
+    function ownedPortal(address _owner)
+        external
+        view
+        returns (Portal[] memory)
+    {
+        uint256 len = balancesOf(_owner);
+        Portal[] memory portal = new Portal[](len);
+        for (uint256 i; i < len; ++i) {
+            portal[i] = _portalInfo[_ownedPortal[_owner][i]];
+        }
+        return portal;
+    }
+}
