@@ -9,13 +9,19 @@ import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 contract FileversePortal is ERC2771Context, Ownable {
     using Counters for Counters.Counter;
 
+    // ipfs hash with metadata for portal contract
     string public metadataIPFSHash;
 
+    // constant for sentinal collaborator
     address internal constant SENTINEL_COLLABORATOR = address(0x1);
 
+    // mapping with address to collaborator
     mapping(address => address) internal collaborators;
+
+    // number of collaborator added to the smart contract
     uint256 internal collaboratorCount;
 
+    // counter instance for fileId
     Counters.Counter private _fileIdCounter;
 
     struct KeyVerifier {
@@ -23,6 +29,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         string encryptionKeyVerifier;
     }
 
+    // mapping from version to key verifier hashes
     mapping(uint256 => KeyVerifier) public keyVerifiers;
 
     struct Member {
@@ -30,6 +37,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         string editDid;
     }
 
+    // mapping from address to the member data
     mapping(address => Member) public members;
     uint256 internal memberCount;
 
@@ -47,6 +55,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         uint256 version;
     }
 
+    // mapping from fileId to the file metadata
     mapping(uint256 => File) public files;
 
     /**
