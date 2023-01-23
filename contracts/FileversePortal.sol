@@ -44,7 +44,8 @@ contract FileversePortal is ERC2771Context, Ownable {
     enum FileType {
         PUBLIC,
         PRIVATE,
-        GATED
+        GATED,
+        MEMBER_PRIVATE
     }
 
     struct File {
