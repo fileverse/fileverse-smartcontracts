@@ -20,3 +20,7 @@ npm coverage
 ```bash
 docs/ErrorCode.md
 ```
+
+### High Level Spec
+
+![High Level Spec](./docs/High_Level.png)
