@@ -28,16 +28,33 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
 
     address private immutable trustedForwarder;
 
+    /**
+     * @notice constructor for the fileverse portal registry smart contract
+     * @param _trustedForwarder - instance of the trusted forwarder
+     */
     constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {
         trustedForwarder = _trustedForwarder;
     }
 
-    // Returns owner of portal
+    /**
+     * @notice get function that returns the owner address of the portal
+     * @param _portal - The address of the portal
+     * @return owner - The address of the owner
+     */
     function ownerOf(address _portal) public view returns (address) {
         return _ownerOf[_portal];
     }
 
     event Mint(address indexed account, address indexed portal);
+
+    /**
+     * @notice Create a new FileversePortal contract and assign it to the owner 
+     * who calls this function
+     * @dev This function also emits a Mint event
+     * @param _metadataIPFSHash - The IPFS hash of the metadata file.
+     * @param _ownerViewDid - owner's view DID
+     * @param _ownerEditDid - owner's edit DID
+     */
     function mint(
         string calldata _metadataIPFSHash,
         string calldata _ownerViewDid,
@@ -57,6 +74,13 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         emit Mint(owner, _portal);
     }
 
+    /**
+     * @notice A private function that is called by the public function `mint`. 
+     * It is used to create a new portal and assign it to the owner of the 
+     * contract.
+     * @param _owner - The address of the owner
+     * @param _portal - The address of the portal
+     */
     function _mint(address _owner, address _portal) internal {
         require(_ownerOf[_portal] == address(0), "FV200");
         uint256 length = _balances[_owner];
@@ -70,7 +94,11 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         _balances[_owner] = length;
     }
 
-    // Returns data for portal on address _portal 
+    /**
+     * @notice `portalInfo` returns the `Portal` struct for a given portal address
+     * @param _portal - The address of the portal
+     * @return portalInfo The Portal memory struct.
+     */
     function portalInfo(address _portal)
         external
         view
@@ -79,7 +107,10 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         return _portalInfo[_portal];
     }
 
-    // Returns all the portals in registry
+    /**
+     * @notice This function returns an array of all the portals in the registry.
+     * @return portals The array of Portal memory struct with all the portals
+     */
     function allPortal() external view returns (Portal[] memory) {
         uint256 len = _allPortal.length;
         Portal[] memory viewFns = new Portal[](len);
@@ -89,12 +120,20 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         return viewFns;
     }
 
-    // Returns number of portal owned by the address _owner
+    /**
+     * @notice Returning the number of portals owned by the address _owner
+     * @param _owner address of the owner who's balance if being queried
+     * @return balance The array of Portal memory struct with all the portals
+     */
     function balancesOf(address _owner) public view returns (uint256) {
         return _balances[_owner];
     }
 
-    // Returns a list of portal that are owned by the address _owner
+    /**
+     * @notice Returning a list of portals that are owned by the address _owner
+     * @param _owner address of the owner who's balance if being queried
+     * @return portals The array of Portal memory struct owned by the address _owner
+     */
     function ownedPortal(address _owner)
         external
         view
