@@ -14,3 +14,9 @@ npm install
 npm test
 npm coverage
 ```
+
+### Error Codes
+
+```bash
+docs/ErrorCode.md
+```

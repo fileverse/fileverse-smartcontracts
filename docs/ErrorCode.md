@@ -1,4 +1,4 @@
-### Owner management related
+# Error Code Documentation
 - `FV200`: `Owner is already present for this subdomain`
 - `FV201`: `DID String is not valid`
 - `FV202`: `Given array has zero element`
