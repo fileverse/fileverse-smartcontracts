@@ -31,6 +31,8 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
 
     /**
      * @notice constructor for the fileverse portal registry smart contract
+     * Implementation that gets deployed: 
+     * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/metatx/MinimalForwarder.sol
      * @param _trustedForwarder - instance of the trusted forwarder
      */
     constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {
