@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+import "./structs/PortalKeyVerifiers.sol";
 
 /// @custom:security-contact security@fileverse.io
 contract FileversePortal is ERC2771Context, Ownable {
@@ -24,13 +25,10 @@ contract FileversePortal is ERC2771Context, Ownable {
     // counter instance for fileId
     Counters.Counter private _fileIdCounter;
 
-    struct KeyVerifier {
-        string decryptionKeyVerifier;
-        string encryptionKeyVerifier;
-    }
+    Counters.Counter private _keyVerifierCounter;
 
     // mapping from version to key verifier hashes
-    mapping(uint256 => KeyVerifier) public keyVerifiers;
+    mapping(uint256 => PortalKeyVerifiers.KeyVerifier) public keyVerifiers;
 
     struct Member {
         string viewDid;
@@ -73,7 +71,8 @@ contract FileversePortal is ERC2771Context, Ownable {
         string memory _ownerViewDid,
         string memory _ownerEditDid,
         address owner,
-        address _trustedForwarder
+        address _trustedForwarder,
+        PortalKeyVerifiers.KeyVerifier memory _keyVerifier
     ) ERC2771Context(_trustedForwarder) {
         metadataIPFSHash = _metadataIPFSHash;
         address[] memory _collaborators = new address[](1);
@@ -81,6 +80,20 @@ contract FileversePortal is ERC2771Context, Ownable {
         setupCollaborators(_collaborators);
         _transferOwnership(owner);
         setupMember(owner, _ownerViewDid, _ownerEditDid);
+        string memory portalEncryptionKeyVerifier = _keyVerifier
+            .portalEncryptionKeyVerifier;
+        string memory portalDecryptionKeyVerifier = _keyVerifier
+            .portalDecryptionKeyVerifier;
+        string memory memberEncryptionKeyVerifier = _keyVerifier
+            .memberEncryptionKeyVerifier;
+        string memory memberDecryptionKeyVerifier = _keyVerifier
+            .memberDecryptionKeyVerifier;
+        _addKeyVerifiers(
+            portalEncryptionKeyVerifier,
+            portalDecryptionKeyVerifier,
+            memberEncryptionKeyVerifier,
+            memberDecryptionKeyVerifier
+        );
     }
 
     /**
@@ -430,6 +443,25 @@ contract FileversePortal is ERC2771Context, Ownable {
      */
     function getMemberCount() public view returns (uint256) {
         return memberCount;
+    }
+
+    function _addKeyVerifiers(
+        string memory portalEncryptionKeyVerifier,
+        string memory portalDecryptionKeyVerifier,
+        string memory memberEncryptionKeyVerifier,
+        string memory memberDecryptionKeyVerifier
+    ) internal {
+        require(bytes(portalEncryptionKeyVerifier).length != 0, "FV206");
+        require(bytes(portalDecryptionKeyVerifier).length != 0, "FV206");
+        require(bytes(memberEncryptionKeyVerifier).length != 0, "FV206");
+        require(bytes(memberDecryptionKeyVerifier).length != 0, "FV206");
+        uint256 verifierId = _keyVerifierCounter.current();
+        keyVerifiers[verifierId] = PortalKeyVerifiers.KeyVerifier(
+            portalEncryptionKeyVerifier,
+            portalDecryptionKeyVerifier,
+            memberEncryptionKeyVerifier,
+            memberDecryptionKeyVerifier
+        );
     }
 
     /**

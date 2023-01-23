@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./FileversePortal.sol";
+import "./structs/PortalKeyVerifiers.sol";
 
 contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     string public name = "Fileverse Portal Registry";
@@ -31,7 +32,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
 
     /**
      * @notice constructor for the fileverse portal registry smart contract
-     * Implementation that gets deployed: 
+     * Implementation that gets deployed:
      * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/metatx/MinimalForwarder.sol
      * @param _trustedForwarder - instance of the trusted forwarder
      */
@@ -51,7 +52,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     event Mint(address indexed account, address indexed portal);
 
     /**
-     * @notice Create a new FileversePortal contract and assign it to the owner 
+     * @notice Create a new FileversePortal contract and assign it to the owner
      * who calls this function
      * @dev This function also emits a Mint event
      * @param _metadataIPFSHash - The IPFS hash of the metadata file.
@@ -61,16 +62,28 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     function mint(
         string calldata _metadataIPFSHash,
         string calldata _ownerViewDid,
-        string calldata _ownerEditDid
+        string calldata _ownerEditDid,
+        string memory _portalEncryptionKeyVerifier,
+        string memory _portalDecryptionKeyVerifier,
+        string memory _memberEncryptionKeyVerifier,
+        string memory _memberDecryptionKeyVerifier
     ) external nonReentrant {
         address owner = _msgSender();
+        PortalKeyVerifiers.KeyVerifier memory verifier = PortalKeyVerifiers
+            .KeyVerifier(
+                _portalEncryptionKeyVerifier,
+                _portalDecryptionKeyVerifier,
+                _memberEncryptionKeyVerifier,
+                _memberDecryptionKeyVerifier
+            );
         address _portal = address(
             new FileversePortal(
                 _metadataIPFSHash,
                 _ownerViewDid,
                 _ownerEditDid,
                 owner,
-                trustedForwarder
+                trustedForwarder,
+                verifier
             )
         );
         _mint(owner, _portal);
@@ -78,8 +91,8 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     }
 
     /**
-     * @notice A private function that is called by the public function `mint`. 
-     * It is used to create a new portal and assign it to the owner of the 
+     * @notice A private function that is called by the public function `mint`.
+     * It is used to create a new portal and assign it to the owner of the
      * contract.
      * @param _owner - The address of the owner
      * @param _portal - The address of the portal
@@ -102,11 +115,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @param _portal - The address of the portal
      * @return portalInfo The Portal memory struct.
      */
-    function portalInfo(address _portal)
-        external
-        view
-        returns (Portal memory)
-    {
+    function portalInfo(address _portal) external view returns (Portal memory) {
         return _portalInfo[_portal];
     }
 
@@ -137,11 +146,9 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @param _owner address of the owner who's balance if being queried
      * @return portals The array of Portal memory struct owned by the address _owner
      */
-    function ownedPortal(address _owner)
-        external
-        view
-        returns (Portal[] memory)
-    {
+    function ownedPortal(
+        address _owner
+    ) external view returns (Portal[] memory) {
         uint256 len = balancesOf(_owner);
         Portal[] memory portal = new Portal[](len);
         for (uint256 i; i < len; ++i) {
