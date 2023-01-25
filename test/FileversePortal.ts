@@ -12,13 +12,20 @@ describe("Fileverse Portal: Owner", function () {
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
     const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
+    const keyVerifier = {
+      portalEncryptionKeyVerifier: "string",
+      portalDecryptionKeyVerifier: "string",
+      memberEncryptionKeyVerifier: "string",
+      memberDecryptionKeyVerifier: "string",
+    };
 
     const fileversePortal = await FileversePortal.deploy(
       metadataIPFSHash,
       ownerViewDid,
       ownerEditDid,
       owner.address,
-      trustedForwarder
+      trustedForwarder,
+      keyVerifier
     );
     await fileversePortal.deployed();
     // Fixtures can return anything you consider useful for your tests
@@ -140,6 +147,12 @@ describe("Fileverse Portal: Collaborator", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const addr1EditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifier = {
+      portalEncryptionKeyVerifier: "string",
+      portalDecryptionKeyVerifier: "string",
+      memberEncryptionKeyVerifier: "string",
+      memberDecryptionKeyVerifier: "string",
+    };
 
     const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
 
@@ -148,7 +161,8 @@ describe("Fileverse Portal: Collaborator", function () {
       ownerViewDid,
       ownerEditDid,
       owner.address,
-      trustedForwarder
+      trustedForwarder,
+      keyVerifier
     );
     await fileversePortal.deployed();
     await fileversePortal.addCollaborator(addr1.address);

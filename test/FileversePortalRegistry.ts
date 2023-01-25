@@ -72,11 +72,16 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
@@ -95,9 +100,18 @@ describe("Fileverse Portal Registry", function () {
     const metadataIPFSHash = "";
     const ownerViewDid = "";
     const ownerEditDid = "";
+    const keyVerifierHash = "xuYD";
 
     await expect(
-      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+      fileversePortalRegistry.mint(
+        metadataIPFSHash,
+        ownerViewDid,
+        ownerEditDid,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash
+      )
     ).to.revertedWith("FV201");
   });
 
@@ -110,16 +124,25 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
     await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(2);
@@ -140,12 +163,29 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     await expect(
-      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+      fileversePortalRegistry.mint(
+        metadataIPFSHash,
+        ownerViewDid,
+        ownerEditDid,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash
+      )
     ).to.emit(fileversePortalRegistry, "Mint");
     await expect(
-      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+      fileversePortalRegistry.mint(
+        metadataIPFSHash,
+        ownerViewDid,
+        ownerEditDid,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash
+      )
     ).to.emit(fileversePortalRegistry, "Mint");
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(2);
@@ -166,9 +206,18 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     await expect(
-      fileversePortalRegistry.mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+      fileversePortalRegistry.mint(
+        metadataIPFSHash,
+        ownerViewDid,
+        ownerEditDid,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash,
+        keyVerifierHash
+      )
     ).to.emit(fileversePortalRegistry, "Mint");
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
@@ -180,7 +229,15 @@ describe("Fileverse Portal Registry", function () {
     await expect(
       fileversePortalRegistry
         .connect(addr1)
-        .mint(metadataIPFSHash, ownerViewDid, ownerEditDid)
+        .mint(
+          metadataIPFSHash,
+          ownerViewDid,
+          ownerEditDid,
+          keyVerifierHash,
+          keyVerifierHash,
+          keyVerifierHash,
+          keyVerifierHash
+        )
     ).to.emit(fileversePortalRegistry, "Mint");
     expect(
       await fileversePortalRegistry.connect(addr1).balancesOf(addr1.address)
@@ -203,11 +260,16 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
     const txReciept = await data.wait();
     const mintEvent = txReciept.events.find((elem) => elem.event === "Mint");
@@ -231,11 +293,16 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
     const txReciept = await data.wait();
     const mintEvent = txReciept.events.find((elem) => elem.event === "Mint");
@@ -260,11 +327,16 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
     const txReciept = await data.wait();
     const mintEvent = txReciept.events.find((elem) => elem.event === "Mint");
@@ -298,11 +370,16 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifierHash = "xuYD";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
       ownerViewDid,
-      ownerEditDid
+      ownerEditDid,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash,
+      keyVerifierHash
     );
     const txReciept = await data.wait();
     const mintEvent = txReciept.events.find((elem) => elem.event === "Mint");
