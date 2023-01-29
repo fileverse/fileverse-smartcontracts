@@ -393,7 +393,7 @@ describe("Fileverse Portal: Fake Collaborator", function () {
     expect(await fileversePortal.getFileCount()).to.equal(0);
   });
 
-  it("should be able to edit file", async function () {
+  it("should not be able to edit file", async function () {
     const { fileversePortal, ipfsHash, addr1, addr2 } = await loadFixture(
       deployPortalFixtureCollaborator
     );
