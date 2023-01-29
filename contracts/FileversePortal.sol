@@ -445,6 +445,13 @@ contract FileversePortal is ERC2771Context, Ownable {
         return memberCount;
     }
 
+    event UpdatedKeyVerifiers(
+        bytes32 portalEncryptionKeyVerifier,
+        bytes32 portalDecryptionKeyVerifier,
+        bytes32 memberEncryptionKeyVerifier,
+        bytes32 memberDecryptionKeyVerifier
+    );
+
     /**
      * @notice This is public function to update the keyVerifiers of the contract which 
      * This function can only be called by an owner
@@ -465,6 +472,12 @@ contract FileversePortal is ERC2771Context, Ownable {
             memberEncryptionKeyVerifier,
             memberDecryptionKeyVerifier
         );
+        emit UpdatedKeyVerifiers(
+            portalEncryptionKeyVerifier,
+            portalDecryptionKeyVerifier,
+            memberEncryptionKeyVerifier,
+            memberDecryptionKeyVerifier
+        )
     }
 
     function _addKeyVerifiers(
