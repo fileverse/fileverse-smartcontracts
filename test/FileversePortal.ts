@@ -307,3 +307,109 @@ describe("Fileverse Portal: Collaborator", function () {
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
   });
 });
+
+describe("Fileverse Portal: Fake Collaborator", function () {
+  async function deployPortalFixtureCollaborator() {
+    const [owner, addr1, addr2] = await ethers.getSigners();
+    const FileversePortal = await ethers.getContractFactory("FileversePortal");
+    const metadataIPFSHash = "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp5";
+    const ownerViewDid =
+      "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
+    const ownerEditDid =
+      "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const addr1ViewDid =
+      "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
+    const addr1EditDid =
+      "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
+    const keyVerifier = {
+      portalEncryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      portalDecryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      memberEncryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      memberDecryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+    };
+
+    const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
+
+    const fileversePortal = await FileversePortal.deploy(
+      metadataIPFSHash,
+      ownerViewDid,
+      ownerEditDid,
+      owner.address,
+      trustedForwarder,
+      keyVerifier
+    );
+    await fileversePortal.deployed();
+    await fileversePortal.addCollaborator(addr1.address);
+    // Fixtures can return anything you consider useful for your tests
+    return {
+      fileversePortal,
+      FileversePortal,
+      trustedForwarder,
+      metadataIPFSHash,
+      ownerViewDid,
+      ownerEditDid,
+      addr1ViewDid,
+      addr1EditDid,
+      owner,
+      addr1,
+      addr2,
+      AddressOne: "0x0000000000000000000000000000000000000001",
+      ipfsHash: "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp6",
+    };
+  }
+
+  it("should not be able to register self as member", async function () {
+    const { fileversePortal, addr1EditDid, addr1ViewDid, addr2 } =
+      await loadFixture(deployPortalFixtureCollaborator);
+    await expect(
+      fileversePortal
+        .connect(addr2)
+        .registerSelfToMember(addr1ViewDid, addr1EditDid)
+    ).to.be.revertedWith("Role Missing");
+    expect(await fileversePortal.getMemberCount()).to.equal(1);
+  });
+
+  it("should not be able to remove self as member", async function () {
+    const { fileversePortal, addr2 } = await loadFixture(
+      deployPortalFixtureCollaborator
+    );
+    await expect(
+      fileversePortal.connect(addr2).removeSelfFromMember()
+    ).to.be.revertedWith("Role Missing");
+    expect(await fileversePortal.getMemberCount()).to.equal(1);
+  });
+
+  it("should not be able to add file", async function () {
+    const { fileversePortal, ipfsHash, addr2 } = await loadFixture(
+      deployPortalFixtureCollaborator
+    );
+    await expect(
+      fileversePortal.connect(addr2).addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0)
+    ).to.be.revertedWith("Role Missing");
+    expect(await fileversePortal.getFileCount()).to.equal(0);
+  });
+
+  it("should be able to edit file", async function () {
+    const { fileversePortal, ipfsHash, addr1, addr2 } = await loadFixture(
+      deployPortalFixtureCollaborator
+    );
+    expect(
+      await fileversePortal
+        .connect(addr1)
+        .addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0)
+    )
+      .to.emit(fileversePortal, "AddedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+    await expect(
+      fileversePortal
+        .connect(addr2)
+        .editFile(0, ipfsHash, ipfsHash, ipfsHash, 1, 0)
+    ).to.be.revertedWith("Role Missing");
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+  });
+});

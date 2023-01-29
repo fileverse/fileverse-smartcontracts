@@ -411,12 +411,8 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
   }
 
   it("should be able to deploy with correct initial state", async function () {
-    const {
-      deployedFileversePortal,
-      trustedForwarder,
-      owner,
-      keyVerifierHash,
-    } = await loadFixture(deployPortalRegistryFixture);
+    const { deployedFileversePortal, trustedForwarder, owner } =
+      await loadFixture(deployPortalRegistryFixture);
     expect(
       await deployedFileversePortal.isTrustedForwarder(trustedForwarder)
     ).to.equal(true);
