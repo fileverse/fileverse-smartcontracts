@@ -23,4 +23,6 @@ docs/ErrorCode.md
 
 ### High Level Spec
 
-![High Level Spec](https://github.com/fileverse/fileverse-smartcontracts/blob/c2f35d8303cfbc192fd0a2c39e82dbf2c0fb45a7/docs/High_Level.png)
+![High Level Spec](./docs/High_Level.png)
+
+[Technical Spec](./docs/TECHSPEC.md)
