@@ -80,13 +80,13 @@ contract FileversePortal is ERC2771Context, Ownable {
         setupCollaborators(_collaborators);
         _transferOwnership(owner);
         setupMember(owner, _ownerViewDid, _ownerEditDid);
-        string memory portalEncryptionKeyVerifier = _keyVerifier
+        bytes32 portalEncryptionKeyVerifier = _keyVerifier
             .portalEncryptionKeyVerifier;
-        string memory portalDecryptionKeyVerifier = _keyVerifier
+        bytes32 portalDecryptionKeyVerifier = _keyVerifier
             .portalDecryptionKeyVerifier;
-        string memory memberEncryptionKeyVerifier = _keyVerifier
+        bytes32 memberEncryptionKeyVerifier = _keyVerifier
             .memberEncryptionKeyVerifier;
-        string memory memberDecryptionKeyVerifier = _keyVerifier
+        bytes32 memberDecryptionKeyVerifier = _keyVerifier
             .memberDecryptionKeyVerifier;
         _addKeyVerifiers(
             portalEncryptionKeyVerifier,
@@ -454,10 +454,10 @@ contract FileversePortal is ERC2771Context, Ownable {
      * @param memberDecryptionKeyVerifier - sha256 hash of Member Decryption Key
      */
     function updateKeyVerifiers(
-        bytes32 memory portalEncryptionKeyVerifier,
-        bytes32 memory portalDecryptionKeyVerifier,
-        bytes32 memory memberEncryptionKeyVerifier,
-        bytes32 memory memberDecryptionKeyVerifier
+        bytes32 portalEncryptionKeyVerifier,
+        bytes32 portalDecryptionKeyVerifier,
+        bytes32 memberEncryptionKeyVerifier,
+        bytes32 memberDecryptionKeyVerifier
     ) public onlyOwner {
         _addKeyVerifiers(
             portalEncryptionKeyVerifier,
@@ -468,15 +468,15 @@ contract FileversePortal is ERC2771Context, Ownable {
     }
 
     function _addKeyVerifiers(
-        bytes32 memory portalEncryptionKeyVerifier,
-        bytes32 memory portalDecryptionKeyVerifier,
-        bytes32 memory memberEncryptionKeyVerifier,
-        bytes32 memory memberDecryptionKeyVerifier
+        bytes32 portalEncryptionKeyVerifier,
+        bytes32 portalDecryptionKeyVerifier,
+        bytes32 memberEncryptionKeyVerifier,
+        bytes32 memberDecryptionKeyVerifier
     ) internal {
-        require(bytes(portalEncryptionKeyVerifier).length != 0, "FV206");
-        require(bytes(portalDecryptionKeyVerifier).length != 0, "FV206");
-        require(bytes(memberEncryptionKeyVerifier).length != 0, "FV206");
-        require(bytes(memberDecryptionKeyVerifier).length != 0, "FV206");
+        require(portalEncryptionKeyVerifier.length != 0, "FV206");
+        require(portalDecryptionKeyVerifier.length != 0, "FV206");
+        require(memberEncryptionKeyVerifier.length != 0, "FV206");
+        require(memberDecryptionKeyVerifier.length != 0, "FV206");
         uint256 verifierId = _keyVerifierCounter;
         keyVerifiers[verifierId] = PortalKeyVerifiers.KeyVerifier(
             portalEncryptionKeyVerifier,
