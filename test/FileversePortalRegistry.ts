@@ -403,6 +403,7 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
       FileversePortalRegistry,
       fileversePortalRegistry,
       trustedForwarder,
+      keyVerifierHash,
       owner,
       addr1,
       addr2,
@@ -410,8 +411,12 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
   }
 
   it("should be able to deploy with correct initial state", async function () {
-    const { deployedFileversePortal, trustedForwarder, owner } =
-      await loadFixture(deployPortalRegistryFixture);
+    const {
+      deployedFileversePortal,
+      trustedForwarder,
+      owner,
+      keyVerifierHash,
+    } = await loadFixture(deployPortalRegistryFixture);
     expect(
       await deployedFileversePortal.isTrustedForwarder(trustedForwarder)
     ).to.equal(true);
@@ -419,6 +424,57 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
     expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await deployedFileversePortal.getMemberCount()).to.equal(1);
     expect(await deployedFileversePortal.getFileCount()).to.equal(0);
+  });
+
+  it("should be able to deploy with correct key verifiers", async function () {
+    const { deployedFileversePortal, keyVerifierHash } = await loadFixture(
+      deployPortalRegistryFixture
+    );
+    const newHash =
+      "0x948edbe7ede5aa7423476ae29dcd7d61e7711a071aea0d83698377effa896525";
+    await deployedFileversePortal.updateKeyVerifiers(
+      newHash,
+      newHash,
+      newHash,
+      newHash
+    );
+    const keyVerifiers = await deployedFileversePortal.keyVerifiers(0);
+    expect(keyVerifiers.portalEncryptionKeyVerifier).to.equal(keyVerifierHash);
+    expect(keyVerifiers.portalDecryptionKeyVerifier).to.equal(keyVerifierHash);
+    expect(keyVerifiers.memberEncryptionKeyVerifier).to.equal(keyVerifierHash);
+    expect(keyVerifiers.memberDecryptionKeyVerifier).to.equal(keyVerifierHash);
+  });
+
+  it("should be able to update the key verifiers of the deployed portal", async function () {
+    const { deployedFileversePortal, keyVerifierHash } = await loadFixture(
+      deployPortalRegistryFixture
+    );
+    const keyVerifiersInitial = await deployedFileversePortal.keyVerifiers(0);
+    expect(keyVerifiersInitial.portalEncryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    expect(keyVerifiersInitial.portalDecryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    expect(keyVerifiersInitial.memberEncryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    expect(keyVerifiersInitial.memberDecryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    const newHash =
+      "0x948edbe7ede5aa7423476ae29dcd7d61e7711a071aea0d83698377effa896525";
+    await deployedFileversePortal.updateKeyVerifiers(
+      newHash,
+      newHash,
+      newHash,
+      newHash
+    );
+    const keyVerifiersNew = await deployedFileversePortal.keyVerifiers(1);
+    expect(keyVerifiersNew.portalEncryptionKeyVerifier).to.equal(newHash);
+    expect(keyVerifiersNew.portalDecryptionKeyVerifier).to.equal(newHash);
+    expect(keyVerifiersNew.memberEncryptionKeyVerifier).to.equal(newHash);
+    expect(keyVerifiersNew.memberDecryptionKeyVerifier).to.equal(newHash);
   });
 
   it("should be able to deploy with correct collaborator set", async function () {

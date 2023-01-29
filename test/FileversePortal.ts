@@ -12,15 +12,13 @@ describe("Fileverse Portal: Owner", function () {
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
     const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
     const keyVerifier = {
-      portalEncryptionKeyVerifier:
-        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
-      portalDecryptionKeyVerifier:
-        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
-      memberEncryptionKeyVerifier:
-        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
-      memberDecryptionKeyVerifier:
-        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      portalEncryptionKeyVerifier: keyVerifierHash,
+      portalDecryptionKeyVerifier: keyVerifierHash,
+      memberEncryptionKeyVerifier: keyVerifierHash,
+      memberDecryptionKeyVerifier: keyVerifierHash,
     };
 
     const fileversePortal = await FileversePortal.deploy(
@@ -45,6 +43,7 @@ describe("Fileverse Portal: Owner", function () {
       addr2,
       AddressOne: "0x0000000000000000000000000000000000000001",
       ipfsHash: "QmWSa5j5DbAfHvALWhrBgrcEkt5PAPVKLzcjuCAE8szQp6",
+      keyVerifierHash,
     };
   }
 
@@ -135,6 +134,57 @@ describe("Fileverse Portal: Owner", function () {
     )
       .to.emit(fileversePortal, "EditedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
+  });
+
+  it("should be able to deploy with correct key verifiers", async function () {
+    const { fileversePortal, keyVerifierHash } = await loadFixture(
+      deployPortalFixture
+    );
+    const newHash =
+      "0x948edbe7ede5aa7423476ae29dcd7d61e7711a071aea0d83698377effa896525";
+    await fileversePortal.updateKeyVerifiers(
+      newHash,
+      newHash,
+      newHash,
+      newHash
+    );
+    const keyVerifiers = await fileversePortal.keyVerifiers(0);
+    expect(keyVerifiers.portalEncryptionKeyVerifier).to.equal(keyVerifierHash);
+    expect(keyVerifiers.portalDecryptionKeyVerifier).to.equal(keyVerifierHash);
+    expect(keyVerifiers.memberEncryptionKeyVerifier).to.equal(keyVerifierHash);
+    expect(keyVerifiers.memberDecryptionKeyVerifier).to.equal(keyVerifierHash);
+  });
+
+  it("should be able to update the key verifiers of the deployed portal", async function () {
+    const { fileversePortal, keyVerifierHash } = await loadFixture(
+      deployPortalFixture
+    );
+    const keyVerifiersInitial = await fileversePortal.keyVerifiers(0);
+    expect(keyVerifiersInitial.portalEncryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    expect(keyVerifiersInitial.portalDecryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    expect(keyVerifiersInitial.memberEncryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    expect(keyVerifiersInitial.memberDecryptionKeyVerifier).to.equal(
+      keyVerifierHash
+    );
+    const newHash =
+      "0x948edbe7ede5aa7423476ae29dcd7d61e7711a071aea0d83698377effa896525";
+    await fileversePortal.updateKeyVerifiers(
+      newHash,
+      newHash,
+      newHash,
+      newHash
+    );
+    const keyVerifiersNew = await fileversePortal.keyVerifiers(1);
+    expect(keyVerifiersNew.portalEncryptionKeyVerifier).to.equal(newHash);
+    expect(keyVerifiersNew.portalDecryptionKeyVerifier).to.equal(newHash);
+    expect(keyVerifiersNew.memberEncryptionKeyVerifier).to.equal(newHash);
+    expect(keyVerifiersNew.memberDecryptionKeyVerifier).to.equal(newHash);
   });
 });
 
