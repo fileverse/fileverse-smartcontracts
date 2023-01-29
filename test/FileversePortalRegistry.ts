@@ -428,12 +428,14 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
     );
     const newHash =
       "0x948edbe7ede5aa7423476ae29dcd7d61e7711a071aea0d83698377effa896525";
-    await deployedFileversePortal.updateKeyVerifiers(
-      newHash,
-      newHash,
-      newHash,
-      newHash
-    );
+    await expect(
+      deployedFileversePortal.updateKeyVerifiers(
+        newHash,
+        newHash,
+        newHash,
+        newHash
+      )
+    ).to.emit(deployedFileversePortal, "UpdatedKeyVerifiers");
     const keyVerifiers = await deployedFileversePortal.keyVerifiers(0);
     expect(keyVerifiers.portalEncryptionKeyVerifier).to.equal(keyVerifierHash);
     expect(keyVerifiers.portalDecryptionKeyVerifier).to.equal(keyVerifierHash);
