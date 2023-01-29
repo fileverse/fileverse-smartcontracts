@@ -477,7 +477,7 @@ contract FileversePortal is ERC2771Context, Ownable {
             portalDecryptionKeyVerifier,
             memberEncryptionKeyVerifier,
             memberDecryptionKeyVerifier
-        )
+        );
     }
 
     function _addKeyVerifiers(
