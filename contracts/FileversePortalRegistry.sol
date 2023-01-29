@@ -58,15 +58,19 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @param _metadataIPFSHash - The IPFS hash of the metadata file.
      * @param _ownerViewDid - owner's view DID
      * @param _ownerEditDid - owner's edit DID
+     * @param portalEncryptionKeyVerifier - sha256 hash of Portal Encryption Key
+     * @param portalDecryptionKeyVerifier - sha256 hash of Portal Decryption Key
+     * @param memberEncryptionKeyVerifier - sha256 hash of Member Encryption Key
+     * @param memberDecryptionKeyVerifier - sha256 hash of Member Decryption Key
      */
     function mint(
         string calldata _metadataIPFSHash,
         string calldata _ownerViewDid,
         string calldata _ownerEditDid,
-        string memory _portalEncryptionKeyVerifier,
-        string memory _portalDecryptionKeyVerifier,
-        string memory _memberEncryptionKeyVerifier,
-        string memory _memberDecryptionKeyVerifier
+        bytes32 memory _portalEncryptionKeyVerifier,
+        bytes32 memory _portalDecryptionKeyVerifier,
+        bytes32 memory _memberEncryptionKeyVerifier,
+        bytes32 memory _memberDecryptionKeyVerifier
     ) external nonReentrant {
         address owner = _msgSender();
         PortalKeyVerifiers.KeyVerifier memory verifier = PortalKeyVerifiers

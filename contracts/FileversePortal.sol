@@ -25,7 +25,7 @@ contract FileversePortal is ERC2771Context, Ownable {
     // counter instance for fileId
     Counters.Counter private _fileIdCounter;
 
-    Counters.Counter private _keyVerifierCounter;
+    uint256 private _keyVerifierCounter;
 
     // mapping from version to key verifier hashes
     mapping(uint256 => PortalKeyVerifiers.KeyVerifier) public keyVerifiers;
@@ -417,7 +417,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         address sender = _msgSender();
         members[sender] = Member(viewDid, editDid);
         memberCount++;
-        emit RegisteredMember(_msgSender());
+        emit RegisteredMember(sender);
     }
 
     event RemovedMember(address indexed account);
@@ -433,7 +433,7 @@ contract FileversePortal is ERC2771Context, Ownable {
         address sender = _msgSender();
         delete members[sender];
         memberCount--;
-        emit RemovedMember(_msgSender());
+        emit RemovedMember(sender);
     }
 
     /**
@@ -445,23 +445,46 @@ contract FileversePortal is ERC2771Context, Ownable {
         return memberCount;
     }
 
+    /**
+     * @notice This is public function to update the keyVerifiers of the contract which 
+     * This function can only be called by an owner
+     * @param portalEncryptionKeyVerifier - sha256 hash of Portal Encryption Key
+     * @param portalDecryptionKeyVerifier - sha256 hash of Portal Decryption Key
+     * @param memberEncryptionKeyVerifier - sha256 hash of Member Encryption Key
+     * @param memberDecryptionKeyVerifier - sha256 hash of Member Decryption Key
+     */
+    function updateKeyVerifiers(
+        bytes32 memory portalEncryptionKeyVerifier,
+        bytes32 memory portalDecryptionKeyVerifier,
+        bytes32 memory memberEncryptionKeyVerifier,
+        bytes32 memory memberDecryptionKeyVerifier
+    ) public onlyOwner {
+        _addKeyVerifiers(
+            portalEncryptionKeyVerifier,
+            portalDecryptionKeyVerifier,
+            memberEncryptionKeyVerifier,
+            memberDecryptionKeyVerifier
+        );
+    }
+
     function _addKeyVerifiers(
-        string memory portalEncryptionKeyVerifier,
-        string memory portalDecryptionKeyVerifier,
-        string memory memberEncryptionKeyVerifier,
-        string memory memberDecryptionKeyVerifier
+        bytes32 memory portalEncryptionKeyVerifier,
+        bytes32 memory portalDecryptionKeyVerifier,
+        bytes32 memory memberEncryptionKeyVerifier,
+        bytes32 memory memberDecryptionKeyVerifier
     ) internal {
         require(bytes(portalEncryptionKeyVerifier).length != 0, "FV206");
         require(bytes(portalDecryptionKeyVerifier).length != 0, "FV206");
         require(bytes(memberEncryptionKeyVerifier).length != 0, "FV206");
         require(bytes(memberDecryptionKeyVerifier).length != 0, "FV206");
-        uint256 verifierId = _keyVerifierCounter.current();
+        uint256 verifierId = _keyVerifierCounter;
         keyVerifiers[verifierId] = PortalKeyVerifiers.KeyVerifier(
             portalEncryptionKeyVerifier,
             portalDecryptionKeyVerifier,
             memberEncryptionKeyVerifier,
             memberDecryptionKeyVerifier
         );
+        _keyVerifierCounter++;
     }
 
     /**
