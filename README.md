@@ -23,6 +23,6 @@ docs/ErrorCode.md
 
 ### High Level Spec
 
-![High Level Spec](./docs/High_Level.png)
+![High Level Spec](./docs/HLD.svg)
 
 [Technical Spec](./docs/TECHSPEC.md)
