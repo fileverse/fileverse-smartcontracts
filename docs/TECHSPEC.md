@@ -89,7 +89,7 @@ Setter Functions dealing with this:
 ### Portal Metadata
 
 The portal contract has metadata. It's the IPFS hash with some json in a format as follows.
-
+```closure
 {
   name: “”,
   description: “”,
@@ -97,6 +97,7 @@ The portal contract has metadata. It's the IPFS hash with some json in a format 
   cover: “”,
   // Can be extended later on since its off chain
 }
+```
 
 Getter Functions dealing with this:
 - [Anyone] metadataIPFSHash
