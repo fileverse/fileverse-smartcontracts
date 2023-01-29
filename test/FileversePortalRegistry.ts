@@ -72,7 +72,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     await fileversePortalRegistry.mint(
       metadataIPFSHash,
@@ -100,7 +101,8 @@ describe("Fileverse Portal Registry", function () {
     const metadataIPFSHash = "";
     const ownerViewDid = "";
     const ownerEditDid = "";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     await expect(
       fileversePortalRegistry.mint(
@@ -124,7 +126,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     await fileversePortalRegistry.mint(
       metadataIPFSHash,
@@ -163,7 +166,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     await expect(
       fileversePortalRegistry.mint(
@@ -206,7 +210,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     await expect(
       fileversePortalRegistry.mint(
@@ -260,7 +265,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
@@ -293,7 +299,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
@@ -327,7 +334,8 @@ describe("Fileverse Portal Registry", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,
@@ -370,7 +378,8 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
       "did:key:z6MkkiKsFrxyb6mDd6RaWjDuuBs84T8vFtPgCds7jEC9bPbo";
     const ownerEditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
-    const keyVerifierHash = "xuYD";
+    const keyVerifierHash =
+      "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969";
 
     const data = await fileversePortalRegistry.mint(
       metadataIPFSHash,

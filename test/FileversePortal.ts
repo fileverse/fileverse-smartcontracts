@@ -13,10 +13,14 @@ describe("Fileverse Portal: Owner", function () {
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
     const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
     const keyVerifier = {
-      portalEncryptionKeyVerifier: "string",
-      portalDecryptionKeyVerifier: "string",
-      memberEncryptionKeyVerifier: "string",
-      memberDecryptionKeyVerifier: "string",
+      portalEncryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      portalDecryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      memberEncryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      memberDecryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
     };
 
     const fileversePortal = await FileversePortal.deploy(
@@ -148,10 +152,14 @@ describe("Fileverse Portal: Collaborator", function () {
     const addr1EditDid =
       "did:key:z6MkjeNxGFLaSrTTRnQbDcfXytYb8wAZiY1yy1X2g678xuYD";
     const keyVerifier = {
-      portalEncryptionKeyVerifier: "string",
-      portalDecryptionKeyVerifier: "string",
-      memberEncryptionKeyVerifier: "string",
-      memberDecryptionKeyVerifier: "string",
+      portalEncryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      portalDecryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      memberEncryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
+      memberDecryptionKeyVerifier:
+        "0x185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969",
     };
 
     const trustedForwarder = "0x7EF22F49a2aE4a2E7c20369E6F7E5C9f94238141";
