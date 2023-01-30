@@ -13,20 +13,23 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const trustedForwarder = ""; // trusted forwarder address
+
   // We get the contract to deploy
-  const FileverseTokenTemplate = await ethers.getContractFactory(
-    "FileverseTokenTemplate"
+  const FileversePortalRegistry = await ethers.getContractFactory(
+    "FileversePortalRegistry"
   );
 
-  const fileverseNFT = await FileverseTokenTemplate.deploy(
-    "FileverseNFT",
-    "FNFT"
+  const fileversePortalRegistry = await FileversePortalRegistry.deploy(
+    trustedForwarder
   );
 
-  const data = await fileverseNFT.deployed();
-  console.log(data);
+  await fileversePortalRegistry.deployed();
 
-  console.log("FileverseNFT deployed to:", fileverseNFT.address);
+  console.log(
+    "FileversePortalRegistry deployed to:",
+    fileversePortalRegistry.address
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
