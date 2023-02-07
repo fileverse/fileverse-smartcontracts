@@ -6,7 +6,7 @@ import "@opengsn/contracts/src/BasePaymaster.sol";
 
 import {IFileversePortalRegistry, Portal} from "./IFileversePortalRegistry.sol";
 
-contract WhitelistPaymaster is BasePaymaster {
+contract FileversePaymaster is BasePaymaster {
     IFileversePortalRegistry immutable registry;
 
     constructor(address _registry) {
