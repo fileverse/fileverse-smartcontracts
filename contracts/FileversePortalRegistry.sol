@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -8,7 +8,7 @@ import "./FileversePortal.sol";
 import "./structs/PortalKeyVerifiers.sol";
 
 contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
-    string public name = "Fileverse Portal Registry";
+    string public constant name = "Fileverse Portal Registry";
     struct Portal {
         address portal;
         uint256 index;
@@ -23,8 +23,6 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     mapping(address => mapping(uint256 => address)) private _ownedPortal;
     // Array with all token ids, used for enumeration
     address[] private _allPortal;
-    // Mapping from FNS to position in the allFNS array
-    mapping(address => uint256) private _allPortalIndex;
     // Mapping from address of portal to Portal Data
     mapping(address => Portal) private _portalInfo;
     // address of trusted forwarder
@@ -37,6 +35,7 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @param _trustedForwarder - instance of the trusted forwarder
      */
     constructor(address _trustedForwarder) ERC2771Context(_trustedForwarder) {
+        require(_trustedForwarder != address(0), "FV211");
         trustedForwarder = _trustedForwarder;
     }
 
@@ -101,14 +100,13 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @param _owner - The address of the owner
      * @param _portal - The address of the portal
      */
-    function _mint(address _owner, address _portal) internal {
+    function _mint(address _owner, address _portal) private {
         require(_ownerOf[_portal] == address(0), "FV200");
         uint256 length = _balances[_owner];
         uint256 _allPortalLength = _allPortal.length;
         _ownerOf[_portal] = _owner;
         _allPortal.push(_portal);
         _ownedPortal[_owner][length] = _portal;
-        _allPortalIndex[_portal] = ++_allPortalLength;
         _portalInfo[_portal] = Portal(_portal, length, _allPortalLength);
         ++length;
         _balances[_owner] = length;
@@ -127,11 +125,20 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @notice This function returns an array of all the portals in the registry.
      * @return portals The array of Portal memory struct with all the portals
      */
-    function allPortal() external view returns (Portal[] memory) {
+    function allPortal(uint256 offset, uint256 limit)
+        external
+        view
+        returns (Portal[] memory)
+    {
         uint256 len = _allPortal.length;
+        require(offset > len, "offset and limit cannot be more than length");
         Portal[] memory viewFns = new Portal[](len);
-        for (uint256 i; i < len; ++i) {
-            viewFns[i] = _portalInfo[_allPortal[i]];
+        for (uint256 i; i < limit; ++i) {
+            uint256 index = i + offset;
+            if(index > len) {
+                break;
+            }
+            viewFns[i] = _portalInfo[_allPortal[index]];
         }
         return viewFns;
     }
@@ -151,12 +158,19 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
      * @return portals The array of Portal memory struct owned by the address _owner
      */
     function ownedPortal(
-        address _owner
+        address _owner,
+        uint256 offset,
+        uint256 limit
     ) external view returns (Portal[] memory) {
         uint256 len = balancesOf(_owner);
-        Portal[] memory portal = new Portal[](len);
-        for (uint256 i; i < len; ++i) {
-            portal[i] = _portalInfo[_ownedPortal[_owner][i]];
+        require(offset > len, "offset and limit cannot be more than length");
+        Portal[] memory portal = new Portal[](limit);
+        for (uint256 i; i < limit; ++i) {
+            uint256 index = i + offset;
+            if(index > len) {
+                break;
+            }
+            portal[i] = _portalInfo[_ownedPortal[_owner][index]];
         }
         return portal;
     }
