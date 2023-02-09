@@ -10,3 +10,4 @@
 - `FV208`: `Key verifier version does not exist`
 - `FV209`: `Collaborator does not exist`
 - `FV210`: `Portal does not exist`
+- `FV211`: `Zero address is not allowed`

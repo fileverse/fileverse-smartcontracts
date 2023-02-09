@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./structs/PortalKeyVerifiers.sol";
 
 /// @custom:security-contact security@fileverse.io
-contract FileversePortal is ERC2771Context, Ownable {
+contract FileversePortal is ERC2771Context, Ownable2Step {
     using Counters for Counters.Counter;
 
     // ipfs hash with metadata for portal contract
@@ -74,6 +74,9 @@ contract FileversePortal is ERC2771Context, Ownable {
         address _trustedForwarder,
         PortalKeyVerifiers.KeyVerifier memory _keyVerifier
     ) ERC2771Context(_trustedForwarder) {
+        require(owner != address(0), "FV211");
+        require(_trustedForwarder != address(0), "FV211");
+
         metadataIPFSHash = _metadataIPFSHash;
         _addCollaborator(owner);
         _transferOwnership(owner);
@@ -264,9 +267,7 @@ contract FileversePortal is ERC2771Context, Ownable {
     ) public onlyCollaborator {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
-        if (version > _keyVerifierCounter) {
-            require(false, "FV208");
-        }
+        _versionOfKyVerifierCheck(version);
 
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
@@ -316,7 +317,7 @@ contract FileversePortal is ERC2771Context, Ownable {
     ) public onlyCollaborator {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
-
+        _versionOfKyVerifierCheck(version);
         if (fileId > _fileIdCounter.current()) {
             require(false, "FV207");
         }
@@ -378,6 +379,8 @@ contract FileversePortal is ERC2771Context, Ownable {
         address sender = _msgSender();
         _removeKey(sender);
     }
+
+    function renounceOwnership() public override onlyOwner {}
 
     /**
      * `function getMemberCount() public view returns (uint256)`
@@ -513,8 +516,8 @@ contract FileversePortal is ERC2771Context, Ownable {
      */
     function _removeKey(address account) internal {
         Member memory member = members[account];
-        require(bytes(member.viewDid).length > 0, 'FV209');
-        require(bytes(member.editDid).length > 0, 'FV209');
+        require(bytes(member.viewDid).length > 0, "FV209");
+        require(bytes(member.editDid).length > 0, "FV209");
         delete members[account];
         --memberCount;
         emit RemovedMember(account);
@@ -538,8 +541,23 @@ contract FileversePortal is ERC2771Context, Ownable {
     ) internal {
         require(bytes(viewDid).length != 0, "FV201");
         require(bytes(editDid).length != 0, "FV201");
+        Member memory member = members[account];
+        require(bytes(member.viewDid).length == 0, "FV209");
+        require(bytes(member.editDid).length == 0, "FV209");
+
         members[account] = Member(viewDid, editDid);
         memberCount += 1;
         emit RegisteredMember(account);
+    }
+
+    /**
+     * `_versionOfKyVerifierCheck(uint256 _version)` checks if the `_version` is greater than
+     * `_keyVerifierCounter` and if it is, it throws an error
+     * @param _version - The version of the key verifier that you want to check.
+     */
+    function _versionOfKyVerifierCheck(uint256 _version) internal view {
+        if (_version > _keyVerifierCounter) {
+            require(false, "FV208");
+        }
     }
 }
