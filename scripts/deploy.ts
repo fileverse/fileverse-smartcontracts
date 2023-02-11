@@ -3,7 +3,8 @@
 //
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-import { ethers } from "hardhat";
+import { ethers, hardhatArguments } from "hardhat";
+import fs from "fs";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -13,22 +14,39 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  const trustedForwarder = ""; // trusted forwarder address
+  const trustedForwarder = process.env.TRUSTED_FORWARDER; // trusted forwarder address
+
+  if (!trustedForwarder) {
+    throw new Error("trusted forwarder is not defined");
+  }
 
   // We get the contract to deploy
   const FileversePortalRegistry = await ethers.getContractFactory(
     "FileversePortalRegistry"
   );
 
-  const fileversePortalRegistry = await FileversePortalRegistry.deploy(
+  const fileversePortalRegistryInstance = await FileversePortalRegistry.deploy(
     trustedForwarder
   );
 
-  await fileversePortalRegistry.deployed();
+  await fileversePortalRegistryInstance.deployed();
 
-  console.log(
-    "FileversePortalRegistry deployed to:",
-    fileversePortalRegistry.address
+  const FileversePaymaster = await ethers.getContractFactory(
+    "FileversePaymaster"
+  );
+
+  const fileversePaymasterInstance = await FileversePaymaster.deploy(
+    fileversePortalRegistryInstance.address
+  );
+
+  await fileversePaymasterInstance.deployed();
+
+  fs.writeFileSync(
+    (hardhatArguments.network ?? "unknown") + ".json",
+    JSON.stringify({
+      paymaster: fileversePaymasterInstance.address,
+      registry: fileversePortalRegistryInstance.address,
+    })
   );
 }
 
