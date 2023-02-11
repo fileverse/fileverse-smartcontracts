@@ -40,6 +40,7 @@ const config: HardhatUserConfig = {
       },
     ],
   },
+  defaultNetwork: "hardhat",
   networks: {
     rinkeby: {
       url: process.env.RINKEBY_URL || "",
@@ -55,7 +56,6 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-
 };
 
 export default config;
