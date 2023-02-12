@@ -62,6 +62,7 @@ describe("Fileverse Portal: Owner", function () {
 
   it("should be collaborator by default", async function () {
     const { fileversePortal, owner } = await loadFixture(deployPortalFixture);
+    expect(await fileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await fileversePortal.isCollaborator(owner.address)).to.equal(true);
   });
 

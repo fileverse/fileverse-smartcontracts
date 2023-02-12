@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./FileversePortal.sol";
@@ -123,24 +123,27 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
 
     /**
      * @notice This function returns an array of all the portals in the registry.
+     * @param _resultsPerPage results per page
+     * @param _page current page
      * @return portals The array of Portal memory struct with all the portals
      */
-    function allPortal(uint256 offset, uint256 limit)
+    function allPortal(uint256 _resultsPerPage, uint256 _page)
         external
         view
         returns (Portal[] memory)
     {
         uint256 len = _allPortal.length;
-        require(offset > len, "offset and limit cannot be more than length");
-        Portal[] memory viewFns = new Portal[](len);
-        for (uint256 i; i < limit; ++i) {
-            uint256 index = i + offset;
-            if(index > len) {
+        uint256 startIndex = _resultsPerPage * _page - _resultsPerPage;
+        uint256 endIndex = Math.min(_resultsPerPage * _page, len);
+        require(startIndex <= len, "FV212");
+        Portal[] memory results = new Portal[](endIndex - startIndex);
+        for (uint256 i = startIndex; i < endIndex; ++i) {
+            if(i > len) {
                 break;
             }
-            viewFns[i] = _portalInfo[_allPortal[index]];
+            results[i] = _portalInfo[_allPortal[i]];
         }
-        return viewFns;
+        return results;
     }
 
     /**
@@ -155,23 +158,26 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
     /**
      * @notice Returning a list of portals that are owned by the address _owner
      * @param _owner address of the owner who's balance if being queried
+     * @param _resultsPerPage results per page
+     * @param _page current page
      * @return portals The array of Portal memory struct owned by the address _owner
      */
     function ownedPortal(
         address _owner,
-        uint256 offset,
-        uint256 limit
+        uint256 _resultsPerPage,
+        uint256 _page
     ) external view returns (Portal[] memory) {
         uint256 len = balancesOf(_owner);
-        require(offset > len, "offset and limit cannot be more than length");
-        Portal[] memory portal = new Portal[](limit);
-        for (uint256 i; i < limit; ++i) {
-            uint256 index = i + offset;
-            if(index > len) {
+        uint256 startIndex = _resultsPerPage * _page - _resultsPerPage;
+        require(startIndex <= len, "FV212");
+        uint256 endIndex = Math.min(_resultsPerPage * _page, len);
+        Portal[] memory results = new Portal[](endIndex - startIndex);
+        for (uint256 i = startIndex; i < endIndex; ++i) {
+            if(i > len) {
                 break;
             }
-            portal[i] = _portalInfo[_ownedPortal[_owner][index]];
+            results[i] = _portalInfo[_ownedPortal[_owner][i]];
         }
-        return portal;
+        return results;
     }
 }

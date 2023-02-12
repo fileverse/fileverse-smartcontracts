@@ -78,8 +78,9 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         require(_trustedForwarder != address(0), "FV211");
 
         metadataIPFSHash = _metadataIPFSHash;
-        _addCollaborator(owner);
         _transferOwnership(owner);
+        _setupCollaborator();
+        _addCollaborator(owner);
         _addKey(owner, _ownerViewDid, _ownerEditDid);
         bytes32 portalEncryptionKeyVerifier = _keyVerifier
             .portalEncryptionKeyVerifier;
@@ -480,6 +481,14 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         returns (bytes calldata)
     {
         return ERC2771Context._msgData();
+    }
+
+    /**
+     * @notice Sets up the circular linked list for collaborators mapping.
+     * @dev Initial setup step required for kickstarting the collaborator mapping
+     */
+    function _setupCollaborator() internal {
+        collaborators[SENTINEL_COLLABORATOR] = SENTINEL_COLLABORATOR;
     }
 
     /**
