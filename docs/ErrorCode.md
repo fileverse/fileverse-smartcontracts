@@ -6,3 +6,7 @@
 - `FV204`: `No Duplicate Collaborator`
 - `FV205`: `Should have atleast greater than one owner`
 - `FV206`: `string is not valid`
+- `FV207`: `File does not exist`
+- `FV208`: `Key verifier version does not exist`
+- `FV209`: `Collaborator does not exist`
+- `FV211`: `Zero address is not allowed`

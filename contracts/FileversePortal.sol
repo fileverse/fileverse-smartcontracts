@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./structs/PortalKeyVerifiers.sol";
 
 /// @custom:security-contact security@fileverse.io
-contract FileversePortal is ERC2771Context, Ownable {
+contract FileversePortal is ERC2771Context, Ownable2Step {
     using Counters for Counters.Counter;
 
     // ipfs hash with metadata for portal contract
@@ -74,12 +74,13 @@ contract FileversePortal is ERC2771Context, Ownable {
         address _trustedForwarder,
         PortalKeyVerifiers.KeyVerifier memory _keyVerifier
     ) ERC2771Context(_trustedForwarder) {
+        require(owner != address(0), "FV211");
+        require(_trustedForwarder != address(0), "FV211");
+
         metadataIPFSHash = _metadataIPFSHash;
-        address[] memory _collaborators = new address[](1);
-        _collaborators[0] = owner;
-        setupCollaborators(_collaborators);
+        _addCollaborator(owner);
         _transferOwnership(owner);
-        setupMember(owner, _ownerViewDid, _ownerEditDid);
+        _addKey(owner, _ownerViewDid, _ownerEditDid);
         bytes32 portalEncryptionKeyVerifier = _keyVerifier
             .portalEncryptionKeyVerifier;
         bytes32 portalDecryptionKeyVerifier = _keyVerifier
@@ -96,58 +97,6 @@ contract FileversePortal is ERC2771Context, Ownable {
         );
     }
 
-    /**
-     * @notice The function adds the members as one time initialization
-     * of the contract
-     * @dev It gets called by the constructor and owner gets added as collaborator
-     * @param account - The address of the member to be added.
-     * @param viewDid - The view DID of the member that will be used to view the data.
-     * @param editDid - The edit DID of the member who is allowed to edit the data.
-     */
-    function setupMember(
-        address account,
-        string memory viewDid,
-        string memory editDid
-    ) internal {
-        require(bytes(viewDid).length != 0, "FV201");
-        require(bytes(editDid).length != 0, "FV201");
-        members[account] = Member(viewDid, editDid);
-        memberCount = 1;
-        emit RegisteredMember(account);
-    }
-
-    /**
-     * @notice The function adds the collaborators as one time initialization
-     * of the contract
-     * @dev It gets called by the constructor and owner gets added as collaborator
-     * @param _collaborators - The list of addresses which needs to added to the
-     * collaborator array.
-     */
-    function setupCollaborators(address[] memory _collaborators) internal {
-        // Initializing Subdomain collaborators.
-        uint256 len = _collaborators.length;
-        require(len != 0, "FV202");
-        address currentCollaborator = SENTINEL_COLLABORATOR;
-
-        for (uint256 i; i < len; ++i) {
-            // Owner address cannot be null.
-            address collaborator = _collaborators[i];
-            require(
-                collaborator != address(0) &&
-                    collaborator != SENTINEL_COLLABORATOR &&
-                    collaborator != address(this) &&
-                    currentCollaborator != collaborator,
-                "FV203"
-            );
-            // No duplicate collaborators allowed.
-            require(collaborators[collaborator] == address(0), "FV204");
-            collaborators[currentCollaborator] = collaborator;
-            currentCollaborator = collaborator;
-        }
-        collaborators[currentCollaborator] = SENTINEL_COLLABORATOR;
-        collaboratorCount = len;
-    }
-
     event AddedCollaborator(address indexed account, address indexed by);
 
     /**
@@ -160,17 +109,7 @@ contract FileversePortal is ERC2771Context, Ownable {
      * @param collaborator - The address of the collaborator to be added.
      */
     function addCollaborator(address collaborator) public onlyOwner {
-        require(
-            collaborator != address(0) &&
-                collaborator != SENTINEL_COLLABORATOR &&
-                collaborator != address(this),
-            "FV203"
-        );
-        // No duplicate owners allowed.
-        require(collaborators[collaborator] == address(0), "FV204");
-        collaborators[collaborator] = collaborators[SENTINEL_COLLABORATOR];
-        collaborators[SENTINEL_COLLABORATOR] = collaborator;
-        collaboratorCount++;
+        _addCollaborator(collaborator);
         emit AddedCollaborator(collaborator, _msgSender());
     }
 
@@ -187,10 +126,10 @@ contract FileversePortal is ERC2771Context, Ownable {
      * @param prevCollaborator - The address of the previous collaborator.
      * @param collaborator - The address of the collaborator to be removed.
      */
-    function removeCollaborator(
-        address prevCollaborator,
-        address collaborator
-    ) public onlyOwner {
+    function removeCollaborator(address prevCollaborator, address collaborator)
+        public
+        onlyOwner
+    {
         // Only allow to remove an owner, if greater than one.
         require(collaboratorCount - 1 >= 1, "FV205");
         // Validate owner address and check that it corresponds to owner index.
@@ -199,9 +138,15 @@ contract FileversePortal is ERC2771Context, Ownable {
             "FV203"
         );
         require(collaborators[prevCollaborator] == collaborator, "FV204");
+        Member memory member = members[collaborator];
         collaborators[prevCollaborator] = collaborators[collaborator];
         collaborators[collaborator] = address(0);
         collaboratorCount--;
+        if (
+            bytes(member.viewDid).length > 0 || bytes(member.editDid).length > 0
+        ) {
+            _removeKey(collaborator);
+        }
         emit RemovedCollaborator(collaborator, _msgSender());
     }
 
@@ -322,6 +267,7 @@ contract FileversePortal is ERC2771Context, Ownable {
     ) public onlyCollaborator {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
+        _versionOfKyVerifierCheck(version);
 
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
@@ -371,6 +317,10 @@ contract FileversePortal is ERC2771Context, Ownable {
     ) public onlyCollaborator {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
+        _versionOfKyVerifierCheck(version);
+        if (fileId > _fileIdCounter.current()) {
+            require(false, "FV207");
+        }
 
         files[fileId] = File(
             _metadataIPFSHash,
@@ -412,12 +362,8 @@ contract FileversePortal is ERC2771Context, Ownable {
         string calldata viewDid,
         string calldata editDid
     ) public onlyCollaborator {
-        require(bytes(viewDid).length != 0, "FV201");
-        require(bytes(editDid).length != 0, "FV201");
         address sender = _msgSender();
-        members[sender] = Member(viewDid, editDid);
-        memberCount++;
-        emit RegisteredMember(sender);
+        _addKey(sender, viewDid, editDid);
     }
 
     event RemovedMember(address indexed account);
@@ -431,10 +377,10 @@ contract FileversePortal is ERC2771Context, Ownable {
      */
     function removeSelfFromMember() public onlyCollaborator {
         address sender = _msgSender();
-        delete members[sender];
-        memberCount--;
-        emit RemovedMember(sender);
+        _removeKey(sender);
     }
+
+    function renounceOwnership() public override onlyOwner {}
 
     /**
      * `function getMemberCount() public view returns (uint256)`
@@ -453,7 +399,7 @@ contract FileversePortal is ERC2771Context, Ownable {
     );
 
     /**
-     * @notice This is public function to update the keyVerifiers of the contract which 
+     * @notice This is public function to update the keyVerifiers of the contract which
      * This function can only be called by an owner
      * @param portalEncryptionKeyVerifier - sha256 hash of Portal Encryption Key
      * @param portalDecryptionKeyVerifier - sha256 hash of Portal Decryption Key
@@ -497,7 +443,7 @@ contract FileversePortal is ERC2771Context, Ownable {
             memberEncryptionKeyVerifier,
             memberDecryptionKeyVerifier
         );
-        _keyVerifierCounter++;
+        ++_keyVerifierCounter;
     }
 
     /**
@@ -534,5 +480,84 @@ contract FileversePortal is ERC2771Context, Ownable {
         returns (bytes calldata)
     {
         return ERC2771Context._msgData();
+    }
+
+    /**
+     * @notice Adds a new collaborator to the collaborators mapping.
+     *
+     * This function adds a new collaborator address to the collaborators mapping and increments the collaboratorCount.
+     * It checks to ensure that the address is not equal to 0, the SENTINEL_COLLABORATOR, or itself. It also checks to
+     * ensure that the collaborator is not a duplicate.
+     *
+     * @param collaborator The address of the collaborator to add.
+     *
+     */
+    function _addCollaborator(address collaborator) internal {
+        require(
+            collaborator != address(0) &&
+                collaborator != SENTINEL_COLLABORATOR &&
+                collaborator != address(this),
+            "FV203"
+        );
+        // No duplicate owners allowed.
+        require(collaborators[collaborator] == address(0), "FV204");
+        collaborators[collaborator] = collaborators[SENTINEL_COLLABORATOR];
+        collaborators[SENTINEL_COLLABORATOR] = collaborator;
+        ++collaboratorCount;
+    }
+
+    /**
+     * @notice Removes a key from the members mapping.
+     *
+     * This function removes an address from the members mapping and decrements the memberCount. It also emits the
+     * RemovedMember event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
+     *
+     * @param account The address of the member to remove.
+     */
+    function _removeKey(address account) internal {
+        Member memory member = members[account];
+        require(bytes(member.viewDid).length > 0, "FV209");
+        require(bytes(member.editDid).length > 0, "FV209");
+        delete members[account];
+        --memberCount;
+        emit RemovedMember(account);
+    }
+
+    /**
+     * @notice Adds a new member to the members mapping.
+     *
+     * This function adds a new member to the members mapping, increments the memberCount and emits the RegisteredMember
+     * event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
+     *
+     * @param account The address of the member to add.
+     * @param viewDid The view DID of the member.
+     * @param editDid The edit DID of the member.
+     *
+     */
+    function _addKey(
+        address account,
+        string memory viewDid,
+        string memory editDid
+    ) internal {
+        require(bytes(viewDid).length != 0, "FV201");
+        require(bytes(editDid).length != 0, "FV201");
+        Member memory member = members[account];
+        require(bytes(member.viewDid).length == 0, "FV209");
+        require(bytes(member.editDid).length == 0, "FV209");
+
+        members[account] = Member(viewDid, editDid);
+        memberCount += 1;
+        emit RegisteredMember(account);
+    }
+
+    /**
+     * `_versionOfKyVerifierCheck(uint256 _version)` checks if the `_version` is greater than
+     * `_keyVerifierCounter` and if it is, it throws an error
+     * @param _version - The version of the key verifier that you want to check.
+     */
+    function _versionOfKyVerifierCheck(uint256 _version) internal view {
+        if (_version > _keyVerifierCounter) {
+            require(false, "FV208");
+        }
     }
 }
