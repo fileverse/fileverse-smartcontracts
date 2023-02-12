@@ -78,7 +78,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         require(_trustedForwarder != address(0), "FV211");
 
         metadataIPFSHash = _metadataIPFSHash;
-        _addCollaborator(owner);
+        _setupCollaborator(owner);
         _transferOwnership(owner);
         _addKey(owner, _ownerViewDid, _ownerEditDid);
         bytes32 portalEncryptionKeyVerifier = _keyVerifier
@@ -480,6 +480,30 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         returns (bytes calldata)
     {
         return ERC2771Context._msgData();
+    }
+
+    /**
+     * @notice Adds a new collaborator to the collaborators mapping.
+     *
+     * This function adds a new collaborator address to the collaborators mapping and increments the collaboratorCount.
+     * It checks to ensure that the address is not equal to 0, the SENTINEL_COLLABORATOR, or itself. It also checks to
+     * ensure that the collaborator is not a duplicate.
+     *
+     * @param collaborator The address of the collaborator to add.
+     *
+     */
+    function _setupCollaborator(address collaborator) internal {
+        require(
+            collaborator != address(0) &&
+                collaborator != SENTINEL_COLLABORATOR &&
+                collaborator != address(this),
+            "FV203"
+        );
+        // No duplicate owners allowed.
+        require(collaborators[collaborator] == address(0), "FV204");
+        collaborators[SENTINEL_COLLABORATOR] = collaborator;
+        collaborators[collaborator] = SENTINEL_COLLABORATOR;
+        ++collaboratorCount;
     }
 
     /**
