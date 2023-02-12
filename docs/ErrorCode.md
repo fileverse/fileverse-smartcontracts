@@ -11,3 +11,5 @@
 - `FV209`: `Collaborator does not exist`
 - `FV211`: `Zero address is not allowed`
 - `FV212`: `Wrong Pagination params`
+- `FV213`: `File is gated but no gated ipfs hash was provided`
+- `FV214`: `File is not gated but gated ipfs hash was provided`

@@ -270,6 +270,12 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         require(bytes(_contentIPFSHash).length != 0, "FV206");
         _versionOfKyVerifierCheck(version);
 
+        if (filetype == FileType.GATED) {
+            require(bytes(_gateIPFSHash).length != 0, "FV213");
+        } else {
+            require(bytes(_gateIPFSHash).length == 0, "FV214");
+        }
+
         uint256 fileId = _fileIdCounter.current();
         _fileIdCounter.increment();
         files[fileId] = File(
@@ -318,7 +324,15 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     ) public onlyCollaborator {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
+
         _versionOfKyVerifierCheck(version);
+
+        if (filetype == FileType.GATED) {
+            require(bytes(_gateIPFSHash).length != 0, "FV213");
+        } else {
+            require(bytes(_gateIPFSHash).length == 0, "FV214");
+        }
+
         if (fileId > _fileIdCounter.current()) {
             require(false, "FV207");
         }
