@@ -116,7 +116,17 @@ describe("Fileverse Portal: Owner", function () {
     const { fileversePortal, ipfsHash, owner } = await loadFixture(
       deployPortalFixture
     );
-    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0))
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, "", 0, 1))
+      .to.emit(fileversePortal, "AddedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+  });
+
+  it("should be able to add gated file", async function () {
+    const { fileversePortal, ipfsHash, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 2, 1))
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
     expect(await fileversePortal.getFileCount()).to.equal(1);
@@ -126,12 +136,25 @@ describe("Fileverse Portal: Owner", function () {
     const { fileversePortal, ipfsHash, owner } = await loadFixture(
       deployPortalFixture
     );
-    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0))
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, "", 1, 0))
+      .to.emit(fileversePortal, "AddedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+    expect(await fileversePortal.editFile(0, ipfsHash, ipfsHash, "", 1, 0))
+      .to.emit(fileversePortal, "EditedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
+  });
+
+  it("should be able to edit file to gated", async function () {
+    const { fileversePortal, ipfsHash, owner } = await loadFixture(
+      deployPortalFixture
+    );
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, "", 1, 0))
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
     expect(await fileversePortal.getFileCount()).to.equal(1);
     expect(
-      await fileversePortal.editFile(0, ipfsHash, ipfsHash, ipfsHash, 1, 0)
+      await fileversePortal.editFile(0, ipfsHash, ipfsHash, ipfsHash, 2, 0)
     )
       .to.emit(fileversePortal, "EditedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
@@ -278,9 +301,7 @@ describe("Fileverse Portal: Collaborator", function () {
       deployPortalFixtureCollaborator
     );
     expect(
-      await fileversePortal
-        .connect(addr1)
-        .addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0)
+      await fileversePortal.connect(addr1).addFile(ipfsHash, ipfsHash, "", 1, 0)
     )
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
@@ -292,9 +313,7 @@ describe("Fileverse Portal: Collaborator", function () {
       deployPortalFixtureCollaborator
     );
     expect(
-      await fileversePortal
-        .connect(addr1)
-        .addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0)
+      await fileversePortal.connect(addr1).addFile(ipfsHash, ipfsHash, "", 1, 0)
     )
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
@@ -302,7 +321,26 @@ describe("Fileverse Portal: Collaborator", function () {
     expect(
       await fileversePortal
         .connect(addr1)
-        .editFile(0, ipfsHash, ipfsHash, ipfsHash, 1, 0)
+        .editFile(0, ipfsHash, ipfsHash, "", 1, 0)
+    )
+      .to.emit(fileversePortal, "EditedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
+  });
+
+  it("should be able to edit file to gated", async function () {
+    const { fileversePortal, ipfsHash, addr1 } = await loadFixture(
+      deployPortalFixtureCollaborator
+    );
+    expect(
+      await fileversePortal.connect(addr1).addFile(ipfsHash, ipfsHash, "", 1, 0)
+    )
+      .to.emit(fileversePortal, "AddedFile")
+      .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
+    expect(await fileversePortal.getFileCount()).to.equal(1);
+    expect(
+      await fileversePortal
+        .connect(addr1)
+        .editFile(0, ipfsHash, ipfsHash, ipfsHash, 2, 0)
     )
       .to.emit(fileversePortal, "EditedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
@@ -399,17 +437,13 @@ describe("Fileverse Portal: Fake Collaborator", function () {
       deployPortalFixtureCollaborator
     );
     expect(
-      await fileversePortal
-        .connect(addr1)
-        .addFile(ipfsHash, ipfsHash, ipfsHash, 1, 0)
+      await fileversePortal.connect(addr1).addFile(ipfsHash, ipfsHash, "", 1, 0)
     )
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, addr1.address);
     expect(await fileversePortal.getFileCount()).to.equal(1);
     await expect(
-      fileversePortal
-        .connect(addr2)
-        .editFile(0, ipfsHash, ipfsHash, ipfsHash, 1, 0)
+      fileversePortal.connect(addr2).editFile(0, ipfsHash, ipfsHash, "", 1, 0)
     ).to.be.revertedWith("Role Missing");
     expect(await fileversePortal.getFileCount()).to.equal(1);
   });
