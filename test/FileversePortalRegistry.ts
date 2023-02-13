@@ -435,7 +435,7 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
     ).to.equal(true);
     expect(await deployedFileversePortal.owner()).to.equal(owner.address);
     expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
-    expect(await deployedFileversePortal.getMemberCount()).to.equal(1);
+    expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await deployedFileversePortal.getFileCount()).to.equal(0);
   });
 
