@@ -132,10 +132,14 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         onlyOwner
     {
         // Only allow to remove an owner, if greater than one.
-        require(collaboratorCount - 1 >= 1, "FV205");
+        if (collaboratorCount - 1 == 0) {
+            require(false, "FV205");
+        }
         // Validate owner address and check that it corresponds to owner index.
         require(
-            collaborator != address(0) && collaborator != SENTINEL_COLLABORATOR,
+            collaborator != address(0) &&
+                collaborator != SENTINEL_COLLABORATOR &&
+                collaborator != address(this),
             "FV203"
         );
         require(collaborators[prevCollaborator] == collaborator, "FV204");
