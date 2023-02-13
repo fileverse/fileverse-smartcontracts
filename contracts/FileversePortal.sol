@@ -139,12 +139,12 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
             "FV203"
         );
         require(collaborators[prevCollaborator] == collaborator, "FV204");
-        CollaboratorKey memory member = collaboratorKeys[collaborator];
+        CollaboratorKey memory collaboratorKey = collaboratorKeys[collaborator];
         collaborators[prevCollaborator] = collaborators[collaborator];
         collaborators[collaborator] = address(0);
         collaboratorCount--;
         if (
-            bytes(member.viewDid).length > 0 || bytes(member.editDid).length > 0
+            bytes(collaboratorKey.viewDid).length > 0 || bytes(collaboratorKey.editDid).length > 0
         ) {
             _removeKey(collaborator);
         }
@@ -533,14 +533,14 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
      * @notice Removes a key from the collaboratorKeys mapping.
      *
      * This function removes an address from the collaboratorKeys mapping and decrements the collaboratorKeysCount. It also emits the
-     * RemovedMember event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
+     * RemovedCollaboratorKeys event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
      *
      * @param account The address of the member to remove.
      */
     function _removeKey(address account) internal {
-        CollaboratorKey memory member = collaboratorKeys[account];
-        require(bytes(member.viewDid).length > 0, "FV209");
-        require(bytes(member.editDid).length > 0, "FV209");
+        CollaboratorKey memory collaboratorKey = collaboratorKeys[account];
+        require(bytes(collaboratorKey.viewDid).length > 0, "FV209");
+        require(bytes(collaboratorKey.editDid).length > 0, "FV209");
         delete collaboratorKeys[account];
         --collaboratorKeysCount;
         emit RemovedCollaboratorKeys(account);
@@ -564,9 +564,9 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     ) internal {
         require(bytes(viewDid).length != 0, "FV201");
         require(bytes(editDid).length != 0, "FV201");
-        CollaboratorKey memory member = collaboratorKeys[account];
-        require(bytes(member.viewDid).length == 0, "FV209");
-        require(bytes(member.editDid).length == 0, "FV209");
+        CollaboratorKey memory collaboratorKey = collaboratorKeys[account];
+        require(bytes(collaboratorKey.viewDid).length == 0, "FV209");
+        require(bytes(collaboratorKey.editDid).length == 0, "FV209");
 
         collaboratorKeys[account] = CollaboratorKey(viewDid, editDid);
         collaboratorKeysCount += 1;
