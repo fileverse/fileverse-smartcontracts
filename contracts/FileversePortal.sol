@@ -30,14 +30,14 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     // mapping from version to key verifier hashes
     mapping(uint256 => PortalKeyVerifiers.KeyVerifier) public keyVerifiers;
 
-    struct Member {
+    struct CollaboratorKey {
         string viewDid;
         string editDid;
     }
 
     // mapping from address to the member data
-    mapping(address => Member) public members;
-    uint256 internal memberCount;
+    mapping(address => CollaboratorKey) public collaboratorKeys;
+    uint256 internal collaboratorKeysCount;
 
     enum FileType {
         PUBLIC,
@@ -139,7 +139,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
             "FV203"
         );
         require(collaborators[prevCollaborator] == collaborator, "FV204");
-        Member memory member = members[collaborator];
+        CollaboratorKey memory member = collaboratorKeys[collaborator];
         collaborators[prevCollaborator] = collaborators[collaborator];
         collaborators[collaborator] = address(0);
         collaboratorCount--;
@@ -268,7 +268,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     ) public onlyCollaborator {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
-        _versionOfKyVerifierCheck(version);
+        _versionOfKeyVerifierCheck(version);
 
         if (filetype == FileType.GATED) {
             require(bytes(_gateIPFSHash).length != 0, "FV213");
@@ -325,7 +325,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         require(bytes(_metadataIPFSHash).length != 0, "FV206");
         require(bytes(_contentIPFSHash).length != 0, "FV206");
 
-        _versionOfKyVerifierCheck(version);
+        _versionOfKeyVerifierCheck(version);
 
         if (filetype == FileType.GATED) {
             require(bytes(_gateIPFSHash).length != 0, "FV213");
@@ -364,7 +364,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         return _fileIdCounter.current();
     }
 
-    event RegisteredMember(address indexed account);
+    event RegisteredCollaboratorKeys(address indexed account);
 
     /**
      * @notice This function allows a member to register their DIDs with the contract.
@@ -373,7 +373,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
      * @param viewDid - The DID of the member that will be used to view the data.
      * @param editDid - The DID of the member that can edit the document.
      */
-    function registerSelfToMember(
+    function registerCollaboratorKeys(
         string calldata viewDid,
         string calldata editDid
     ) public onlyCollaborator {
@@ -381,16 +381,16 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
         _addKey(sender, viewDid, editDid);
     }
 
-    event RemovedMember(address indexed account);
+    event RemovedCollaboratorKeys(address indexed account);
 
     /**
-     * `function removeSelfFromMember() public onlyCollaborator returns (void)`
-     * @notice This function removes the sender from the members mapping.
+     * `function removeSelfKeys() public onlyCollaborator returns (void)`
+     * @notice This function removes the sender from the collaboratorKeys mapping.
      * This function can only be called by a collaborator
-     * @dev It also removes the view and edit DIDs from the members mapping
+     * @dev It also removes the view and edit DIDs from the collaboratorKeys mapping
      * An event `event RemovedMember(address indexed account)` is also emitted at the end
      */
-    function removeSelfFromMember() public onlyCollaborator {
+    function removeCollaboratorKeys() public onlyCollaborator {
         address sender = _msgSender();
         _removeKey(sender);
     }
@@ -398,12 +398,12 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     function renounceOwnership() public override onlyOwner {}
 
     /**
-     * `function getMemberCount() public view returns (uint256)`
+     * `function getcollaboratorKeysCount() public view returns (uint256)`
      * @notice This is public function to get all the onborded member of the portal
-     * @return memberCount The number of members in the club.
+     * @return collaboratorKeysCount The number of collaboratorKeys in the club.
      */
-    function getMemberCount() public view returns (uint256) {
-        return memberCount;
+    function getCollaboratorKeysCount() public view returns (uint256) {
+        return collaboratorKeysCount;
     }
 
     event UpdatedKeyVerifiers(
@@ -530,26 +530,26 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     }
 
     /**
-     * @notice Removes a key from the members mapping.
+     * @notice Removes a key from the collaboratorKeys mapping.
      *
-     * This function removes an address from the members mapping and decrements the memberCount. It also emits the
+     * This function removes an address from the collaboratorKeys mapping and decrements the collaboratorKeysCount. It also emits the
      * RemovedMember event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
      *
      * @param account The address of the member to remove.
      */
     function _removeKey(address account) internal {
-        Member memory member = members[account];
+        CollaboratorKey memory member = collaboratorKeys[account];
         require(bytes(member.viewDid).length > 0, "FV209");
         require(bytes(member.editDid).length > 0, "FV209");
-        delete members[account];
-        --memberCount;
-        emit RemovedMember(account);
+        delete collaboratorKeys[account];
+        --collaboratorKeysCount;
+        emit RemovedCollaboratorKeys(account);
     }
 
     /**
-     * @notice Adds a new member to the members mapping.
+     * @notice Adds a new member to the collaboratorKeys mapping.
      *
-     * This function adds a new member to the members mapping, increments the memberCount and emits the RegisteredMember
+     * This function adds a new member to the collaboratorKeys mapping, increments the collaboratorKeysCount and emits the RegisteredMember
      * event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
      *
      * @param account The address of the member to add.
@@ -564,21 +564,21 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     ) internal {
         require(bytes(viewDid).length != 0, "FV201");
         require(bytes(editDid).length != 0, "FV201");
-        Member memory member = members[account];
+        CollaboratorKey memory member = collaboratorKeys[account];
         require(bytes(member.viewDid).length == 0, "FV209");
         require(bytes(member.editDid).length == 0, "FV209");
 
-        members[account] = Member(viewDid, editDid);
-        memberCount += 1;
-        emit RegisteredMember(account);
+        collaboratorKeys[account] = CollaboratorKey(viewDid, editDid);
+        collaboratorKeysCount += 1;
+        emit RegisteredCollaboratorKeys(account);
     }
 
     /**
-     * `_versionOfKyVerifierCheck(uint256 _version)` checks if the `_version` is greater than
+     * `_versionOfKeyVerifierCheck(uint256 _version)` checks if the `_version` is greater than
      * `_keyVerifierCounter` and if it is, it throws an error
      * @param _version - The version of the key verifier that you want to check.
      */
-    function _versionOfKyVerifierCheck(uint256 _version) internal view {
+    function _versionOfKeyVerifierCheck(uint256 _version) internal view {
         if (_version > _keyVerifierCounter) {
             require(false, "FV208");
         }
