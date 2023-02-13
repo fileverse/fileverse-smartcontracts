@@ -133,14 +133,13 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         returns (Portal[] memory)
     {
         uint256 len = _allPortal.length;
-        uint256 startIndex = _resultsPerPage * _page - _resultsPerPage;
-        uint256 endIndex = Math.min(_resultsPerPage * _page, len);
-        require(startIndex <= len, "FV212");
+        (uint256 startIndex, uint256 endIndex) = _pagination(
+            _resultsPerPage,
+            _page,
+            len
+        );
         Portal[] memory results = new Portal[](endIndex - startIndex);
         for (uint256 i = startIndex; i < endIndex; ++i) {
-            if(i > len) {
-                break;
-            }
             results[i] = _portalInfo[_allPortal[i]];
         }
         return results;
@@ -168,16 +167,29 @@ contract FileversePortalRegistry is ReentrancyGuard, ERC2771Context {
         uint256 _page
     ) external view returns (Portal[] memory) {
         uint256 len = balancesOf(_owner);
-        uint256 startIndex = _resultsPerPage * _page - _resultsPerPage;
-        require(startIndex <= len, "FV212");
-        uint256 endIndex = Math.min(_resultsPerPage * _page, len);
+        (uint256 startIndex, uint256 endIndex) = _pagination(
+            _resultsPerPage,
+            _page,
+            len
+        );
         Portal[] memory results = new Portal[](endIndex - startIndex);
         for (uint256 i = startIndex; i < endIndex; ++i) {
-            if(i > len) {
-                break;
-            }
             results[i] = _portalInfo[_ownedPortal[_owner][i]];
         }
         return results;
+    }
+
+    function _pagination(
+        uint256 _resultsPerPage,
+        uint256 _page,
+        uint256 _len
+    ) internal pure returns (uint256, uint256) {
+        uint256 startIndex = _resultsPerPage * _page - _resultsPerPage;
+        uint256 endIndex = Math.min(_resultsPerPage * _page, _len);
+        if (startIndex > _len) {
+            // overflow prevention
+            require(false, "FV212");
+        }
+        return (startIndex, endIndex);
     }
 }
