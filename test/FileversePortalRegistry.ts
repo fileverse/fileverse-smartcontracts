@@ -41,12 +41,17 @@ describe("Fileverse Portal Registry", function () {
     expect(await fileversePortalRegistry.name()).to.equal(
       "Fileverse Portal Registry"
     );
-    expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(0);
-    const ownedPortals = await fileversePortalRegistry.ownedPortal(
+    const totalBalance = await fileversePortalRegistry.balancesOf(
       owner.address
     );
+    expect(totalBalance).to.equal(0);
+    const ownedPortals = await fileversePortalRegistry.ownedPortal(
+      owner.address,
+      10,
+      1
+    );
     expect(ownedPortals.length).to.equal(0);
-    const allPortals = await fileversePortalRegistry.allPortal();
+    const allPortals = await fileversePortalRegistry.allPortal(10, 1);
     expect(allPortals.length).to.equal(0);
   });
 
@@ -87,10 +92,12 @@ describe("Fileverse Portal Registry", function () {
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
     const ownedPortals = await fileversePortalRegistry.ownedPortal(
-      owner.address
+      owner.address,
+      10,
+      1
     );
     expect(ownedPortals.length).to.equal(1);
-    const allPortals = await fileversePortalRegistry.allPortal();
+    const allPortals = await fileversePortalRegistry.allPortal(10, 1);
     expect(allPortals.length).to.equal(1);
   });
 
@@ -150,10 +157,12 @@ describe("Fileverse Portal Registry", function () {
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(2);
     const ownedPortals = await fileversePortalRegistry.ownedPortal(
-      owner.address
+      owner.address,
+      10,
+      1
     );
     expect(ownedPortals.length).to.equal(2);
-    const allPortals = await fileversePortalRegistry.allPortal();
+    const allPortals = await fileversePortalRegistry.allPortal(10, 1);
     expect(allPortals.length).to.equal(2);
   });
 
@@ -194,10 +203,12 @@ describe("Fileverse Portal Registry", function () {
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(2);
     const ownedPortals = await fileversePortalRegistry.ownedPortal(
-      owner.address
+      owner.address,
+      10,
+      1
     );
     expect(ownedPortals.length).to.equal(2);
-    const allPortals = await fileversePortalRegistry.allPortal();
+    const allPortals = await fileversePortalRegistry.allPortal(10, 1);
     expect(allPortals.length).to.equal(2);
   });
 
@@ -227,7 +238,9 @@ describe("Fileverse Portal Registry", function () {
 
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
     const ownedPortals = await fileversePortalRegistry.ownedPortal(
-      owner.address
+      owner.address,
+      10,
+      1
     );
     expect(ownedPortals.length).to.equal(1);
 
@@ -248,11 +261,13 @@ describe("Fileverse Portal Registry", function () {
       await fileversePortalRegistry.connect(addr1).balancesOf(addr1.address)
     ).to.equal(1);
     const ownedPortalsAddr1 = await fileversePortalRegistry.ownedPortal(
-      addr1.address
+      owner.address,
+      10,
+      1
     );
     expect(ownedPortalsAddr1.length).to.equal(1);
 
-    const allPortals = await fileversePortalRegistry.allPortal();
+    const allPortals = await fileversePortalRegistry.allPortal(10, 1);
     expect(allPortals.length).to.equal(2);
   });
 
@@ -282,11 +297,13 @@ describe("Fileverse Portal Registry", function () {
     const { portal } = mintEvent.args;
     expect(await fileversePortalRegistry.balancesOf(owner.address)).to.equal(1);
     const ownedPortals = await fileversePortalRegistry.ownedPortal(
-      owner.address
+      owner.address,
+      10,
+      1
     );
     expect(ownedPortals.length).to.equal(1);
     expect(ownedPortals[0].portal).to.equal(portal);
-    const allPortals = await fileversePortalRegistry.allPortal();
+    const allPortals = await fileversePortalRegistry.allPortal(10, 1);
     expect(allPortals.length).to.equal(1);
   });
 
@@ -321,7 +338,7 @@ describe("Fileverse Portal Registry", function () {
     );
     const portalInfo = await fileversePortalRegistry.portalInfo(portal);
     expect(portalInfo.index).to.equal(0);
-    expect(portalInfo.tokenId).to.equal(1);
+    expect(portalInfo.tokenId).to.equal(0);
     expect(portalInfo.portal).to.equal(portal);
   });
 
@@ -357,7 +374,7 @@ describe("Fileverse Portal Registry", function () {
       .connect(addr1)
       .portalInfo(portal);
     expect(portalInfo.index).to.equal(0);
-    expect(portalInfo.tokenId).to.equal(1);
+    expect(portalInfo.tokenId).to.equal(0);
     expect(portalInfo.portal).to.equal(portal);
   });
 });
@@ -418,7 +435,7 @@ describe("Fileverse Portal Registry: Deployed Portal", function () {
     ).to.equal(true);
     expect(await deployedFileversePortal.owner()).to.equal(owner.address);
     expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
-    expect(await deployedFileversePortal.getMemberCount()).to.equal(1);
+    expect(await deployedFileversePortal.getCollaboratorCount()).to.equal(1);
     expect(await deployedFileversePortal.getFileCount()).to.equal(0);
   });
 

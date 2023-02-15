@@ -6,3 +6,10 @@
 - `FV204`: `No Duplicate Collaborator`
 - `FV205`: `Should have atleast greater than one owner`
 - `FV206`: `string is not valid`
+- `FV207`: `File does not exist`
+- `FV208`: `Key verifier version does not exist`
+- `FV209`: `Collaborator does not exist`
+- `FV211`: `Zero address is not allowed`
+- `FV212`: `Wrong Pagination params`
+- `FV213`: `File is gated but no gated ipfs hash was provided`
+- `FV214`: `File is not gated but gated ipfs hash was provided`
