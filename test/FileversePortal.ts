@@ -116,7 +116,7 @@ describe("Fileverse Portal: Owner", function () {
     const { fileversePortal, ipfsHash, owner } = await loadFixture(
       deployPortalFixture
     );
-    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, "", 0, 1))
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, "", 0, 0))
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
     expect(await fileversePortal.getFileCount()).to.equal(1);
@@ -126,7 +126,7 @@ describe("Fileverse Portal: Owner", function () {
     const { fileversePortal, ipfsHash, owner } = await loadFixture(
       deployPortalFixture
     );
-    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 2, 1))
+    expect(await fileversePortal.addFile(ipfsHash, ipfsHash, ipfsHash, 2, 0))
       .to.emit(fileversePortal, "AddedFile")
       .withArgs(0, ipfsHash, ipfsHash, ipfsHash, owner.address);
     expect(await fileversePortal.getFileCount()).to.equal(1);
