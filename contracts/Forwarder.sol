@@ -142,8 +142,8 @@ contract Forwarder is IForwarder, ERC165, EIP712 {
         return
             abi.encodePacked(
                 _TYPEHASH,
-                uint256(uint160(req.from)),
-                uint256(uint160(req.to)),
+                req.from,
+                req.to,
                 req.value,
                 req.gas,
                 req.nonce,
