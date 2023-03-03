@@ -13,15 +13,19 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
-  const trustedForwarder = ""; // trusted forwarder address
+  const TrustedForwarder = await ethers.getContractFactory("Forwarder"); // trusted forwarder address
 
+  const trustedForwarder = await TrustedForwarder.deploy();
+
+  await trustedForwarder.deployed();
+  console.log("trustedForwarder deployed to:", trustedForwarder.address);
   // We get the contract to deploy
   const FileversePortalRegistry = await ethers.getContractFactory(
     "FileversePortalRegistry"
   );
 
   const fileversePortalRegistry = await FileversePortalRegistry.deploy(
-    trustedForwarder
+    trustedForwarder.address
   );
 
   await fileversePortalRegistry.deployed();
