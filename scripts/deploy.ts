@@ -14,26 +14,27 @@ async function main() {
   // await hre.run('compile');
 
   const TrustedForwarder = await ethers.getContractFactory("Forwarder"); // trusted forwarder address
-
   const trustedForwarder = await TrustedForwarder.deploy();
-
   await trustedForwarder.deployed();
-  console.log("trustedForwarder deployed to:", trustedForwarder.address);
+  console.log("TrustedForwarder deployed to:", trustedForwarder.address);
+
   // We get the contract to deploy
   const FileversePortalRegistry = await ethers.getContractFactory(
     "FileversePortalRegistry"
   );
-
   const fileversePortalRegistry = await FileversePortalRegistry.deploy(
     trustedForwarder.address
   );
-
   await fileversePortalRegistry.deployed();
-
   console.log(
     "FileversePortalRegistry deployed to:",
     fileversePortalRegistry.address
   );
+
+  const FileverseMember = await ethers.getContractFactory("FileverseMember");
+  const fileverseMember = await FileverseMember.deploy();
+  await fileverseMember.deployed();
+  console.log("FileverseMember deployed to:", fileverseMember.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

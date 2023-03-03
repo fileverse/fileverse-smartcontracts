@@ -51,11 +51,15 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    sepolia: {
+      url: process.env.SEPOLIA_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-
 };
 
 export default config;
