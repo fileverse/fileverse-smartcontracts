@@ -35,6 +35,10 @@ async function main() {
   const fileverseMember = await FileverseMember.deploy();
   await fileverseMember.deployed();
   console.log("FileverseMember deployed to:", fileverseMember.address);
+  if (process.env.RELAYER_ADDRESS) {
+    const role = await fileverseMember.MINTER_ROLE();
+    fileverseMember.grantRole(role, process.env.RELAYER_ADDRESS);
+  }
 }
 
 // We recommend this pattern to be able to use async/await everywhere
