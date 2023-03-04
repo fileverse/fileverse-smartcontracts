@@ -27,8 +27,8 @@ interface IForwarder is IERC165 {
         uint256 value;
         uint256 gas;
         uint256 nonce;
-        bytes data;
         uint256 validUntilTime;
+        bytes data;
     }
 
     event DomainRegistered(bytes32 indexed domainSeparator, bytes domainValue);
