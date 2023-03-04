@@ -25,7 +25,7 @@ contract Forwarder is IForwarder, ERC165, EIP712 {
 
     bytes32 private constant _TYPEHASH =
         keccak256(
-            "ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data,uint256 validUntilTime)"
+            "ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,uint256 validUntilTime,bytes data)"
         );
 
     // Nonces of senders, used to prevent replay attacks
@@ -140,15 +140,15 @@ contract Forwarder is IForwarder, ERC165, EIP712 {
         // still, we must make sure all first params are encoded as abi.encode()
         // would encode them - as 256-bit-wide params.
         return
-            abi.encodePacked(
+            abi.encode(
                 _TYPEHASH,
                 req.from,
                 req.to,
                 req.value,
                 req.gas,
                 req.nonce,
-                keccak256(req.data),
-                req.validUntilTime
+                req.validUntilTime,
+                keccak256(req.data)
             );
     }
 }
