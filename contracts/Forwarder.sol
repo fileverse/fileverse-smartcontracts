@@ -25,7 +25,7 @@ contract Forwarder is IForwarder, ERC165, EIP712 {
 
     bytes32 private constant _TYPEHASH =
         keccak256(
-            "ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,uint256 validUntilTime,bytes data)"
+            "ForwardRequest(address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data,uint256 validUntilTime)"
         );
 
     // Nonces of senders, used to prevent replay attacks
@@ -147,8 +147,8 @@ contract Forwarder is IForwarder, ERC165, EIP712 {
                 req.value,
                 req.gas,
                 req.nonce,
-                req.validUntilTime,
-                keccak256(req.data)
+                keccak256(req.data),
+                req.validUntilTime
             );
     }
 }

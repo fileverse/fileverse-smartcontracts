@@ -37,7 +37,7 @@ async function main() {
   console.log("FileverseMember deployed to:", fileverseMember.address);
   if (process.env.RELAYER_ADDRESS) {
     const role = await fileverseMember.MINTER_ROLE();
-    fileverseMember.grantRole(role, process.env.RELAYER_ADDRESS);
+    await fileverseMember.grantRole(role, process.env.RELAYER_ADDRESS);
   }
 }
 
