@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -61,8 +61,8 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
      * @notice constructor for the fileverse portal smart contract
      * @dev It gets called by the mint function of the registry with proper data
      * @param _metadataIPFSHash - The IPFS hash of the metadata file.
-     * @param _ownerViewDid - owner's view DID
-     * @param _ownerEditDid - owner's edit DID
+     * @param _ownerViewDid - The DID of the owner that can be used to view the data
+     * @param _ownerEditDid - The DID of the owner that can be used to edit the data
      * @param owner - address of the owner which is deploying the smart contract
      * @param _trustedForwarder - instance of the trusted forwarder
      */
@@ -337,7 +337,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
             require(bytes(_gateIPFSHash).length == 0, "FV214");
         }
 
-        if (fileId > _fileIdCounter.current()) {
+        if (fileId >= _fileIdCounter.current()) {
             require(false, "FV207");
         }
 
@@ -371,11 +371,11 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     event RegisteredCollaboratorKeys(address indexed account);
 
     /**
-     * @notice This function allows a member to register their DIDs with the contract.
+     * @notice This function allows a collaborator to register their DIDs with the contract.
      * This function can only be called by a collaborator
-     * @dev An event `event RegisteredMember(address indexed account)` is also emitted at the end
-     * @param viewDid - The DID of the member that will be used to view the data.
-     * @param editDid - The DID of the member that can edit the document.
+     * @dev An event `event RegisteredCollaboratorKeys(address indexed account)` is also emitted at the end
+     * @param viewDid - The DID of the collaborator that can be used to view the data
+     * @param editDid - The DID of the collaborator that can be used to edit the data
      */
     function registerCollaboratorKeys(
         string calldata viewDid,
@@ -392,7 +392,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
      * @notice This function removes the sender from the collaboratorKeys mapping.
      * This function can only be called by a collaborator
      * @dev It also removes the view and edit DIDs from the collaboratorKeys mapping
-     * An event `event RemovedMember(address indexed account)` is also emitted at the end
+     * An event `event RemovedCollaboratorKeys(address indexed account)` is also emitted at the end
      */
     function removeCollaboratorKeys() public onlyCollaborator {
         address sender = _msgSender();
@@ -403,7 +403,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
 
     /**
      * `function getcollaboratorKeysCount() public view returns (uint256)`
-     * @notice This is public function to get all the onborded member of the portal
+     * @notice This is public function to get all the onborded collaborators of the portal
      * @return collaboratorKeysCount The number of collaboratorKeys in the club.
      */
     function getCollaboratorKeysCount() public view returns (uint256) {
@@ -539,7 +539,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
      * This function removes an address from the collaboratorKeys mapping and decrements the collaboratorKeysCount. It also emits the
      * RemovedCollaboratorKeys event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
      *
-     * @param account The address of the member to remove.
+     * @param account The address of the collaborator
      */
     function _removeKey(address account) internal {
         CollaboratorKey memory collaboratorKey = collaboratorKeys[account];
@@ -551,14 +551,14 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
     }
 
     /**
-     * @notice Adds a new member to the collaboratorKeys mapping.
+     * @notice Adds a new collaborator's keys to the collaboratorKeys mapping.
      *
-     * This function adds a new member to the collaboratorKeys mapping, increments the collaboratorKeysCount and emits the RegisteredMember
+     * This function adds a new member to the collaboratorKeys mapping, increments the collaboratorKeysCount and emits the RegisteredCollaboratorKeys
      * event. It checks to ensure that the viewDid and editDid strings have a non-zero length.
      *
      * @param account The address of the member to add.
-     * @param viewDid The view DID of the member.
-     * @param editDid The edit DID of the member.
+     * @param viewDid - The DID of the collaborator that can be used to view the data
+     * @param editDid - The DID of the collaborator that can be used to edit the data
      *
      */
     function _addKey(
@@ -583,7 +583,7 @@ contract FileversePortal is ERC2771Context, Ownable2Step {
      * @param _version - The version of the key verifier that you want to check.
      */
     function _versionOfKeyVerifierCheck(uint256 _version) internal view {
-        if (_version > _keyVerifierCounter) {
+        if (_version >= _keyVerifierCounter) {
             require(false, "FV208");
         }
     }
