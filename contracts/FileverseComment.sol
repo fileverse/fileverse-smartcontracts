@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "./FileversePotal.sol";
 
 contract FileverseComment is ReentrancyGuard, ERC2771Context {
     struct Comment {
@@ -14,8 +15,18 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         bool isDeleted;
     }
 
+    struct Reply {
+        address author;
+        string contentHash;
+        uint256 timestamp;
+        bool isDeleted;
+    }
+
     // Mapping from portal address => ddocId => array of comments
     mapping(address => mapping(string => Comment[])) private _comments;
+
+    // Mapping from portal address => ddocId => commentIndex => array of replies
+    mapping(address => mapping(string => mapping(uint256 => Reply[]))) private _replies;
 
     // Address of trusted forwarder
     address private immutable trustedForwarder;
@@ -23,6 +34,8 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     event CommentAdded(address indexed portal, string indexed ddocId, address indexed author, string contentHash, uint256 commentIndex);
     event CommentResolved(address indexed portal, string indexed ddocId, uint256 commentIndex);
     event CommentDeleted(address indexed portal, string indexed ddocId, uint256 commentIndex);
+    event ReplyAdded(address indexed portal, string indexed ddocId, uint256 indexed commentIndex, address author, string contentHash, uint256 replyIndex);
+    event ReplyDeleted(address indexed portal, string indexed ddocId, uint256 indexed commentIndex, uint256 replyIndex);
 
     /**
      * @notice Constructor for FileverseComment contract
@@ -63,6 +76,38 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     }
 
     /**
+     * @notice Add a reply to an existing comment
+     * @param _portal - Address of the portal
+     * @param _ddocId - ID of the file
+     * @param _commentIndex - Index of the comment to reply to
+     * @param _contentHash - Content hash of the reply
+     */
+    function addReply(
+        address _portal,
+        string calldata _ddocId,
+        uint256 _commentIndex,
+        string calldata _contentHash
+    ) external nonReentrant {
+        require(_portal != address(0), "Invalid portal address");
+        require(bytes(_ddocId).length > 0, "Invalid ddoc ID");
+        require(_commentIndex < _comments[_portal][_ddocId].length, "Invalid comment index");
+        require(bytes(_contentHash).length > 0, "Empty reply");
+        require(!_comments[_portal][_ddocId][_commentIndex].isDeleted, "Cannot reply to deleted comment");
+
+        address author = _msgSender();
+        Reply memory newReply = Reply({
+            author: author,
+            contentHash: _contentHash,
+            timestamp: block.timestamp,
+            isDeleted: false
+        });
+
+        uint256 replyIndex = _replies[_portal][_ddocId][_commentIndex].length;
+        _replies[_portal][_ddocId][_commentIndex].push(newReply);
+        emit ReplyAdded(_portal, _ddocId, _commentIndex, author, _contentHash, replyIndex);
+    }
+
+    /**
      * @notice Mark a comment as resolved
      * @param _portal - Address of the portal
      * @param _ddocId - ID of the file
@@ -80,11 +125,11 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         address caller = _msgSender();
         FileversePortal portal = FileversePortal(_portal);
         
-        // Allow both portal owner and comment author to resolve
+        // Allow both portal collaborator and comment author to resolve
         require(
-            portal.owner() == caller || 
+            portal.isCollaborator(caller) || 
             _comments[_portal][_ddocId][_commentIndex].author == caller, 
-            "Only portal owner or comment author can resolve"
+            "Only portal collaborator or comment author can resolve"
         );
 
         require(!_comments[_portal][_ddocId][_commentIndex].isResolved, "Comment already resolved");
@@ -112,17 +157,51 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         address caller = _msgSender();
         FileversePortal portal = FileversePortal(_portal);
 
-        // Allow both portal owner and comment author to delete
+        // Allow both portal collaborator and comment author to delete
         require(
-            portal.owner() == caller || 
+            portal.isCollaborator(caller) || 
             _comments[_portal][_ddocId][_commentIndex].author == caller,
-            "Only portal owner or comment author can delete"
+            "Only portal collaborator or comment author can delete"
         );
 
         require(!_comments[_portal][_ddocId][_commentIndex].isDeleted, "Comment already deleted");
         
         _comments[_portal][_ddocId][_commentIndex].isDeleted = true;
         emit CommentDeleted(_portal, _ddocId, _commentIndex);
+    }
+
+    /**
+     * @notice Delete a reply
+     * @param _portal - Address of the portal
+     * @param _ddocId - ID of the file
+     * @param _commentIndex - Index of the parent comment
+     * @param _replyIndex - Index of the reply to delete
+     */
+    function deleteReply(
+        address _portal,
+        string calldata _ddocId,
+        uint256 _commentIndex,
+        uint256 _replyIndex
+    ) external nonReentrant {
+        require(_portal != address(0), "Invalid portal address");
+        require(bytes(_ddocId).length > 0, "Invalid ddoc ID");
+        require(_commentIndex < _comments[_portal][_ddocId].length, "Invalid comment index");
+        require(_replyIndex < _replies[_portal][_ddocId][_commentIndex].length, "Invalid reply index");
+        
+        address caller = _msgSender();
+        FileversePortal portal = FileversePortal(_portal);
+
+        // Allow both portal collaborator and reply author to delete
+        require(
+            portal.isCollaborator(caller) || 
+            _replies[_portal][_ddocId][_commentIndex][_replyIndex].author == caller,
+            "Only portal collaborator or reply author can delete"
+        );
+
+        require(!_replies[_portal][_ddocId][_commentIndex][_replyIndex].isDeleted, "Reply already deleted");
+        
+        _replies[_portal][_ddocId][_commentIndex][_replyIndex].isDeleted = true;
+        emit ReplyDeleted(_portal, _ddocId, _commentIndex, _replyIndex);
     }
 
     /**
@@ -155,6 +234,22 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     }
 
     /**
+     * @notice Get replies for a specific comment
+     * @param _portal - Address of the portal
+     * @param _ddocId - ID of the file
+     * @param _commentIndex - Index of the comment
+     * @return replies - Array of replies for the comment
+     */
+    function getReplies(
+        address _portal,
+        string calldata _ddocId,
+        uint256 _commentIndex
+    ) external view returns (Reply[] memory) {
+        require(_commentIndex < _comments[_portal][_ddocId].length, "Invalid comment index");
+        return _replies[_portal][_ddocId][_commentIndex];
+    }
+
+    /**
      * @notice Get comment count for a portal's file
      * @param _portal - Address of the portal
      * @param _ddocId - ID of the file
@@ -166,5 +261,21 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         returns (uint256)
     {
         return _comments[_portal][_ddocId].length;
+    }
+
+    /**
+     * @notice Get reply count for a specific comment
+     * @param _portal - Address of the portal
+     * @param _ddocId - ID of the file
+     * @param _commentIndex - Index of the comment
+     * @return count - Number of replies
+     */
+    function getReplyCount(
+        address _portal,
+        string calldata _ddocId,
+        uint256 _commentIndex
+    ) external view returns (uint256) {
+        require(_commentIndex < _comments[_portal][_ddocId].length, "Invalid comment index");
+        return _replies[_portal][_ddocId][_commentIndex].length;
     }
 }
