@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "./FileversePotal.sol";
+import "./FileversePortal.sol";
 
 contract FileverseComment is ReentrancyGuard, ERC2771Context {
     struct Comment {
@@ -33,6 +33,7 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
 
     event CommentAdded(address indexed portal, string indexed ddocId, address indexed author, string contentHash, uint256 commentIndex);
     event CommentResolved(address indexed portal, string indexed ddocId, uint256 commentIndex);
+    event CommentUnresolved(address indexed portal, string indexed ddocId, uint256 commentIndex);
     event CommentDeleted(address indexed portal, string indexed ddocId, uint256 commentIndex);
     event ReplyAdded(address indexed portal, string indexed ddocId, uint256 indexed commentIndex, address author, string contentHash, uint256 replyIndex);
     event ReplyDeleted(address indexed portal, string indexed ddocId, uint256 indexed commentIndex, uint256 replyIndex);
@@ -137,6 +138,38 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         
         _comments[_portal][_ddocId][_commentIndex].isResolved = true;
         emit CommentResolved(_portal, _ddocId, _commentIndex);
+    }
+
+        /**
+     * @notice Mark a comment as unresolved
+     * @param _portal - Address of the portal
+     * @param _ddocId - ID of the file
+     * @param _commentIndex - Index of the comment to resolve
+     */
+    function unresolveComment(
+        address _portal,
+        string calldata _ddocId,
+        uint256 _commentIndex
+    ) external nonReentrant {
+        require(_portal != address(0), "Invalid portal address");
+        require(bytes(_ddocId).length > 0, "Invalid ddoc ID");
+        require(_commentIndex < _comments[_portal][_ddocId].length, "Invalid comment index");
+        
+        address caller = _msgSender();
+        FileversePortal portal = FileversePortal(_portal);
+        
+        // Allow both portal collaborator and comment author to resolve
+        require(
+            portal.isCollaborator(caller) || 
+            _comments[_portal][_ddocId][_commentIndex].author == caller, 
+            "Only portal collaborator or comment author can unresolve"
+        );
+
+        require(_comments[_portal][_ddocId][_commentIndex].isResolved, "Comment already resolved");
+        require(!_comments[_portal][_ddocId][_commentIndex].isDeleted, "Comment is deleted");
+        
+        _comments[_portal][_ddocId][_commentIndex].isResolved = false;
+        emit CommentUnresolved(_portal, _ddocId, _commentIndex);
     }
 
     /**
