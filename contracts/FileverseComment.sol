@@ -10,6 +10,7 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     struct Comment {
         address author;
         string contentHash;
+        string metadataHash;
         uint256 timestamp;
         bool isResolved;
         bool isDeleted;
@@ -68,7 +69,8 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
             contentHash: _contentHash,
             timestamp: block.timestamp,
             isResolved: false,
-            isDeleted: false
+            isDeleted: false,
+            metadataHash: ''
         });
 
         uint256 commentIndex = _comments[_portal][_ddocId].length;
@@ -117,7 +119,8 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     function resolveComment(
         address _portal,
         string calldata _ddocId,
-        uint256 _commentIndex
+        uint256 _commentIndex,
+        string calldata _metadataHash
     ) external nonReentrant {
         require(_portal != address(0), "Invalid portal address");
         require(bytes(_ddocId).length > 0, "Invalid ddoc ID");
@@ -137,6 +140,7 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         require(!_comments[_portal][_ddocId][_commentIndex].isDeleted, "Comment is deleted");
         
         _comments[_portal][_ddocId][_commentIndex].isResolved = true;
+        _comments[_portal][_ddocId][_commentIndex].metadataHash = _metadataHash;
         emit CommentResolved(_portal, _ddocId, _commentIndex);
     }
 
@@ -149,7 +153,8 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     function unresolveComment(
         address _portal,
         string calldata _ddocId,
-        uint256 _commentIndex
+        uint256 _commentIndex,
+        string calldata _metadataHash
     ) external nonReentrant {
         require(_portal != address(0), "Invalid portal address");
         require(bytes(_ddocId).length > 0, "Invalid ddoc ID");
@@ -169,6 +174,7 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         require(!_comments[_portal][_ddocId][_commentIndex].isDeleted, "Comment is deleted");
         
         _comments[_portal][_ddocId][_commentIndex].isResolved = false;
+        _comments[_portal][_ddocId][_commentIndex].metadataHash = _metadataHash;
         emit CommentUnresolved(_portal, _ddocId, _commentIndex);
     }
 
@@ -181,7 +187,8 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
     function deleteComment(
         address _portal,
         string calldata _ddocId,
-        uint256 _commentIndex
+        uint256 _commentIndex,
+        string calldata _metadataHash
     ) external nonReentrant {
         require(_portal != address(0), "Invalid portal address");
         require(bytes(_ddocId).length > 0, "Invalid ddoc ID");
@@ -200,6 +207,7 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         require(!_comments[_portal][_ddocId][_commentIndex].isDeleted, "Comment already deleted");
         
         _comments[_portal][_ddocId][_commentIndex].isDeleted = true;
+        _comments[_portal][_ddocId][_commentIndex].metadataHash = _metadataHash;
         emit CommentDeleted(_portal, _ddocId, _commentIndex);
     }
 
@@ -294,6 +302,15 @@ contract FileverseComment is ReentrancyGuard, ERC2771Context {
         returns (uint256)
     {
         return _comments[_portal][_ddocId].length;
+    }
+
+
+    function getCommentMetadata(address _portal, string calldata _ddocId, uint256 _commentIndex )
+        external
+        view
+        returns (string memory)
+    {
+        return _comments[_portal][_ddocId][_commentIndex].metadataHash;
     }
 
     /**
