@@ -1,4 +1,9 @@
 # Fileverse Contracts
+This repository contains the contracts for Fileverse Portal, which allow for onchain collaboration, file management, and decentralized access control. It includes:
+
+- Fileverse Portal Registry Contract 
+- Fileverse Portal Contract
+- Fileverse Comment Contract
 
 Usage
 -----
